@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 16 16">
+  <g fill="#bebebe">
+    <circle cx="11.25" cy="4.25" r="2.05"/>
+    <path d="M1 13.5 L5.75 6.25 L10.5 13.5 Z"/>
+    <path d="M8.4 13.5 L11.6 8.6 L14.9 13.5 Z"/>
+  </g>
+</svg>

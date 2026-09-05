@@ -1,0 +1,44 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="128" height="128" viewBox="0 0 128 128">
+  <defs>
+    <linearGradient id="sky" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0"   stop-color="#1c6fd4"/>
+      <stop offset=".42" stop-color="#6fb3ef"/>
+      <stop offset=".76" stop-color="#f7c58a"/>
+      <stop offset="1"   stop-color="#f2955f"/>
+    </linearGradient>
+    <linearGradient id="far" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#b3d3f2"/><stop offset="1" stop-color="#7fa9d6"/>
+    </linearGradient>
+    <linearGradient id="mid" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#3a6d9e"/><stop offset="1" stop-color="#28527c"/>
+    </linearGradient>
+    <linearGradient id="front" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#204d7c"/><stop offset="1" stop-color="#123354"/>
+    </linearGradient>
+    <linearGradient id="water" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#2266a6"/><stop offset="1" stop-color="#0f3459"/>
+    </linearGradient>
+    <clipPath id="frame"><rect x="8" y="8" width="112" height="112" rx="24"/></clipPath>
+  </defs>
+
+  <g clip-path="url(#frame)">
+    <rect x="8" y="8" width="112" height="84" fill="url(#sky)"/>
+    <circle cx="93" cy="37" r="14" fill="#fff6dd"/>
+
+    <!-- hintere Kette, dunstig -->
+    <path d="M8 92 L52 38 L96 92 Z" fill="url(#far)"/>
+    <path d="M52 38 L63 52 L56.5 48.5 L52 52 L47.5 48.5 L41 52 Z" fill="#ffffff"/>
+
+    <rect x="8" y="92" width="112" height="28" fill="url(#water)"/>
+
+    <!-- mittlere Kette links -->
+    <path d="M8 92 L36 60 L66 92 Z" fill="url(#mid)"/>
+    <!-- vordere Kette rechts -->
+    <path d="M50 92 L88 54 L126 92 Z" fill="url(#front)"/>
+    <path d="M88 54 L100 66 L94 63 L88 66.5 L82 63 L76 66 Z" fill="#f4f9ff"/>
+
+    <rect x="8" y="100" width="112" height="2" fill="#ffffff" opacity=".14"/>
+    <rect x="8" y="109" width="112" height="1.5" fill="#ffffff" opacity=".09"/>
+  </g>
+  <rect x="8.5" y="8.5" width="111" height="111" rx="23.5" fill="none" stroke="#000" stroke-opacity=".2"/>
+</svg>
