@@ -1,0 +1,9 @@
+[Desktop Entry]
+Type=Application
+Name=Daily Wallpaper (Hintergrunddienst)
+Comment=Wechselt das Hintergrundbild täglich zur eingestellten Zeit
+Exec=daily-wallpaper.watcher
+Icon=${SNAP}/usr/share/icons/hicolor/scalable/apps/daily-wallpaper.svg
+Terminal=false
+NoDisplay=true
+X-GNOME-Autostart-enabled=true

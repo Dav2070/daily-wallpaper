@@ -16,7 +16,7 @@ import subprocess
 import sys
 import threading
 import time
-from datetime import date, datetime
+from datetime import date, datetime, timedelta
 from pathlib import Path
 
 import gi
@@ -36,10 +36,14 @@ UNIT = "unsplash-wallpaper"
 # --------------------------------------------------------------------------- #
 
 def load_core():
+    here = Path(__file__).resolve()
     candidates = [
-        Path(__file__).resolve().with_name("unsplash-wallpaper.py"),
+        here.with_name("unsplash-wallpaper.py"),      # Projektordner
+        here.with_name("daily-wallpaper"),            # Snap: bin/daily-wallpaper
         Path.home() / ".local/bin/unsplash-wallpaper",
     ]
+    if snap := os.environ.get("SNAP"):
+        candidates.insert(0, Path(snap) / "bin/daily-wallpaper")
     for path in candidates:
         if path.exists():
             loader = importlib.machinery.SourceFileLoader("uw_core", str(path))
@@ -165,7 +169,60 @@ def write_setting(section: str, key: str, value: str) -> None:
 # systemd-Timer
 # --------------------------------------------------------------------------- #
 
-class Timer:
+class ConfigSchedule:
+    """Zeitplan über die Konfigurationsdatei, ausgewertet von »--watch«.
+
+    Wird im Snap benutzt: Snaps dürfen keine systemd-Units ins Home schreiben,
+    und »daemon-scope: user« ist in snapd standardmäßig abgeschaltet.
+    """
+
+    @staticmethod
+    def installed() -> bool:
+        return True
+
+    @staticmethod
+    def enabled() -> bool:
+        return core.load_config()["schedule"].getboolean("enabled")
+
+    @staticmethod
+    def scheduled_time() -> tuple[int, int]:
+        return core.scheduled_time(core.load_config())
+
+    @classmethod
+    def next_run(cls) -> str:
+        if not cls.enabled():
+            return "Zeitplan ist aus"
+
+        last = core.last_run()
+        if last is None:
+            return "Erster Lauf steht aus"
+
+        hour, minute = cls.scheduled_time()
+        moment = datetime.now().replace(hour=hour, minute=minute,
+                                        second=0, microsecond=0)
+        if last.date() >= moment.date() or moment < datetime.now():
+            moment += timedelta(days=1)
+
+        text = f"Nächster Lauf {format_when(moment)}"
+        if last:
+            text += f"   ·   zuletzt {format_relative(last)}"
+        return text
+
+    @staticmethod
+    def set_enabled(enabled: bool) -> None:
+        write_setting("schedule", "enabled", "true" if enabled else "false")
+        core.set_autostart(enabled)
+
+    @staticmethod
+    def set_time(hour: int, minute: int) -> None:
+        write_setting("schedule", "time", f"{hour:02d}:{minute:02d}")
+
+    @staticmethod
+    def run_now() -> None:
+        pass
+
+
+class SystemdTimer:
     UNIT_DIR = Path.home() / ".config/systemd/user"
 
     @staticmethod
@@ -240,6 +297,10 @@ class Timer:
         cls._run("start", f"{UNIT}.service")
 
 
+# Im Snap gibt es keine systemd-Units des Benutzers.
+Timer = ConfigSchedule if os.environ.get("SNAP") else SystemdTimer
+
+
 # --------------------------------------------------------------------------- #
 # Hauptfenster
 # --------------------------------------------------------------------------- #
@@ -291,6 +352,8 @@ class Window(Adw.ApplicationWindow):
             action = Gio.SimpleAction.new(name, None)
             action.connect("activate", handler)
             self.add_action(action)
+
+        core.sync_autostart(self.cfg)
 
         self.refresh_current()
         self.refresh_history()
@@ -426,7 +489,7 @@ class Window(Adw.ApplicationWindow):
         group.add(self.notify_row)
 
         folder_row = Adw.ActionRow(title="Bilderordner",
-                                   subtitle=str(Path(wallpaper["directory"]).expanduser()))
+                                   subtitle=str(core.expand_path(wallpaper["directory"])))
         button = Gtk.Button(icon_name="folder-open-symbolic", valign=Gtk.Align.CENTER)
         button.add_css_class("flat")
         button.connect("clicked", self.on_open_folder)
@@ -446,6 +509,8 @@ class Window(Adw.ApplicationWindow):
         self.timer_row.set_sensitive(Timer.installed())
         if not Timer.installed():
             self.timer_row.set_subtitle("Timer nicht installiert -- ./install.sh ausführen")
+        elif os.environ.get("SNAP"):
+            self.timer_row.set_subtitle("Wird vom Hintergrunddienst des Snaps ausgeführt")
         self.timer_row.connect("notify::active", self.on_timer_toggled)
         group.add(self.timer_row)
 
@@ -516,7 +581,7 @@ class Window(Adw.ApplicationWindow):
         while (child := self.flowbox.get_first_child()) is not None:
             self.flowbox.remove(child)
 
-        directory = Path(core.unquote(self.cfg["wallpaper"]["directory"])).expanduser()
+        directory = core.expand_path(self.cfg["wallpaper"]["directory"])
         images = sorted(directory.glob("*.jpg"), key=lambda p: p.stat().st_mtime, reverse=True) \
             if directory.exists() else []
 
@@ -622,7 +687,7 @@ class Window(Adw.ApplicationWindow):
         self.schedule_label.set_text(Timer.next_run())
 
     def on_open_folder(self, *_args) -> None:
-        directory = Path(core.unquote(self.cfg["wallpaper"]["directory"])).expanduser()
+        directory = core.expand_path(self.cfg["wallpaper"]["directory"])
         directory.mkdir(parents=True, exist_ok=True)
         Gtk.FileLauncher(file=Gio.File.new_for_path(str(directory))).launch(self, None, None)
 
@@ -635,7 +700,7 @@ class Window(Adw.ApplicationWindow):
     def on_about(self, *_args) -> None:
         about = Adw.AboutDialog(
             application_name="Unsplash Wallpaper",
-            application_icon=APP_ID,
+            application_icon="daily-wallpaper" if os.environ.get("SNAP") else APP_ID,
             developer_name="unsplash-wallpaper",
             version="1.0",
             comments="Setzt täglich ein Foto von Unsplash als Hintergrundbild.",

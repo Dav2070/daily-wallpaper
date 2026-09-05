@@ -83,6 +83,33 @@ Benachrichtigungen sie über den Namen `de.zurek.UnsplashWallpaper` finden.
 Die symbolische Fassung ist bewusst auf Sonne und zwei Gipfel reduziert, weil
 im farbigen Symbol bei 16 px kein Detail mehr erkennbar bleibt.
 
+## Snap
+
+`snap/snapcraft.yaml` baut die App als Snap namens `daily-wallpaper`.
+
+```bash
+snapcraft pack --use-lxd                       # bauen (braucht LXD)
+sudo snap install --dangerous daily-wallpaper_1.0_amd64.snap
+```
+
+Drei Apps: `daily-wallpaper` (Oberfläche), `daily-wallpaper.cli`
+(Kommandozeile) und `daily-wallpaper.watcher` (Hintergrunddienst).
+
+Unter Confinement gelten andere Regeln als bei der Desktop-Installation:
+
+| Thema | Desktop | Snap |
+|---|---|---|
+| Zeitplan | systemd-User-Timer | `--watch`-Prozess, per `autostart` gestartet |
+| Bilderordner | `~/Pictures/Wallpapers` | dito über `$SNAP_REAL_HOME`, weil `~` im Snap auf `$SNAP_USER_DATA` zeigt |
+| Auflösung | GDK, sonst Mutter | nur GDK — AppArmor sperrt Mutters DBus-Schnittstelle |
+| Benachrichtigung | Gio, sonst `notify-send` | nur Gio — `gdbus call` scheitert am verbotenen `Introspect` |
+| GTK, libadwaita, PyGObject | vom System | aus der GNOME-Plattform, nicht mitgeliefert |
+
+Der `autostart`-Schlüssel in `snapcraft.yaml` ordnet nur eine Datei einer App
+zu; **snapd legt sie nicht selbst an**. Die App schreibt sie nach
+`$SNAP_USER_DATA/.config/autostart`, sobald sie einmal gelaufen ist. Deshalb
+muss die App nach der Installation einmal geöffnet werden.
+
 ## Benutzung
 
 ```bash

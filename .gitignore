@@ -1,0 +1,8 @@
+__pycache__/
+*.pyc
+
+# Snapcraft
+parts/
+stage/
+prime/
+*.snap

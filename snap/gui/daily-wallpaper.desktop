@@ -1,0 +1,11 @@
+[Desktop Entry]
+Type=Application
+Name=Daily Wallpaper
+Comment=Täglich ein neues Hintergrundbild von Unsplash
+Exec=daily-wallpaper
+Icon=${SNAP}/usr/share/icons/hicolor/scalable/apps/daily-wallpaper.svg
+Terminal=false
+Categories=Utility;GTK;
+Keywords=wallpaper;hintergrund;unsplash;desktop;
+StartupNotify=true
+StartupWMClass=de.zurek.UnsplashWallpaper

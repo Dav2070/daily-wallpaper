@@ -1,0 +1,97 @@
+name: daily-wallpaper
+base: core24
+version: '1.0'
+summary: Täglich ein neues Hintergrundbild von Unsplash
+description: |
+  Daily Wallpaper holt einmal am Tag ein Foto von Unsplash und setzt es als
+  GNOME-Hintergrundbild.
+
+  * Suchbegriffe oder Collections bestimmen, was für Bilder kommen
+  * Bilder werden passend zur Monitorauflösung geladen
+  * Verlauf der letzten Bilder, ein Klick setzt eines davon wieder
+  * Uhrzeit des täglichen Wechsels frei einstellbar
+  * Alte Bilder werden automatisch aufgeräumt
+
+  Nach der Installation die App einmal öffnen: dabei wird der tägliche
+  Wechsel eingerichtet und sofort das erste Bild geladen.
+
+  Für die Unsplash-Suche wird ein kostenloser Access Key von
+  https://unsplash.com/oauth/applications benötigt, der in den Einstellungen
+  eingetragen wird. Ohne Key kommen die Bilder von Lorem Picsum.
+
+  Nicht mit Unsplash Inc. verbunden.
+
+title: Daily Wallpaper
+license: MIT
+website: https://github.com/Dav2070/wallpaper-ubuntu-app
+source-code: https://github.com/Dav2070/wallpaper-ubuntu-app
+issues: https://github.com/Dav2070/wallpaper-ubuntu-app/issues
+contact: https://github.com/Dav2070/wallpaper-ubuntu-app/issues
+grade: stable
+confinement: strict
+compression: lzo
+
+platforms:
+  amd64:
+  arm64:
+
+# GTK, libadwaita, die Typelibs und PyGObject kommen aus der GNOME-Plattform
+# ($SNAP_DESKTOP_RUNTIME). Ohne diese beiden Variablen findet das python3 sie
+# nicht. Eigene Kopien mitzuliefern führte zu einem Versionskonflikt: die
+# GTK-Module der Plattform erwarten ein neueres GTK als Ubuntu 24.04 liefert.
+environment:
+  PYTHONPATH: $SNAP_DESKTOP_RUNTIME/usr/lib/python3/dist-packages
+  GI_TYPELIB_PATH: $SNAP_DESKTOP_RUNTIME/usr/lib/x86_64-linux-gnu/girepository-1.0:$SNAP_DESKTOP_RUNTIME/usr/lib/aarch64-linux-gnu/girepository-1.0
+
+# Ohne diesen Slot verbietet AppArmor der Anwendung, ihren eigenen DBus-Namen
+# zu besitzen -- GTK verliert dann die Einzelinstanz-Logik.
+slots:
+  dbus-daily-wallpaper:
+    interface: dbus
+    bus: session
+    name: de.zurek.UnsplashWallpaper
+
+parts:
+  daily-wallpaper:
+    plugin: dump
+    source: .
+    organize:
+      unsplash-wallpaper.py: bin/daily-wallpaper
+      unsplash-wallpaper-gui.py: bin/daily-wallpaper-gui
+      icons/de.zurek.UnsplashWallpaper.svg: usr/share/icons/hicolor/scalable/apps/daily-wallpaper.svg
+      icons/de.zurek.UnsplashWallpaper-symbolic.svg: usr/share/icons/hicolor/symbolic/apps/daily-wallpaper-symbolic.svg
+    stage:
+      - bin
+      - usr
+    prime:
+      - bin
+      - usr
+
+apps:
+  # Grafische Oberfläche
+  daily-wallpaper:
+    command: bin/daily-wallpaper-gui
+    extensions: [gnome]
+    common-id: de.zurek.UnsplashWallpaper
+    plugs:
+      - network
+      - home
+
+  # Kommandozeile: einmaliger Wechsel, Status
+  cli:
+    command: bin/daily-wallpaper
+    extensions: [gnome]
+    plugs:
+      - network
+      - home
+
+  # Hintergrunddienst, startet bei der Anmeldung und wechselt täglich.
+  # Kein systemd-Timer: Snaps dürfen keine Units ins Home schreiben, und
+  # "daemon-scope: user" ist in snapd standardmäßig abgeschaltet.
+  watcher:
+    command: bin/daily-wallpaper --watch
+    extensions: [gnome]
+    autostart: daily-wallpaper-watcher.desktop
+    plugs:
+      - network
+      - home

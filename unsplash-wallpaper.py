@@ -27,6 +27,7 @@ import urllib.error
 import urllib.parse
 import urllib.request
 from dataclasses import dataclass, asdict
+from datetime import date, datetime
 from pathlib import Path
 
 APP = "unsplash-wallpaper"
@@ -78,6 +79,17 @@ quality = 85
 
 # Desktop-Benachrichtigung mit Fotograf anzeigen
 notify = true
+
+[schedule]
+# Wird vom Wach-Modus (--watch) und von --if-due ausgewertet. Ausserhalb eines
+# Snaps uebernimmt stattdessen der systemd-Timer die Ausfuehrung.
+enabled = true
+
+# Uhrzeit des taeglichen Wechsels
+time = 09:00
+
+# Abstand der Pruefungen im Wach-Modus, in Minuten
+check_every = 15
 """
 
 log = logging.getLogger(APP)
@@ -109,6 +121,20 @@ def unquote(value: str) -> str:
     if len(value) >= 2 and value[0] == value[-1] and value[0] in "\"'":
         value = value[1:-1].strip()
     return value
+
+
+def expand_path(value: str) -> Path:
+    """Expandiert »~«.
+
+    In einem Snap zeigt HOME auf $SNAP_USER_DATA. Die Bilder müssen aber im
+    echten Home liegen, sonst kann die GNOME Shell sie nicht lesen -- dafür
+    setzt snapd SNAP_REAL_HOME.
+    """
+    text = unquote(value)
+    real_home = os.environ.get("SNAP_REAL_HOME")
+    if real_home and (text == "~" or text.startswith("~/")):
+        return Path(real_home + text[1:])
+    return Path(text).expanduser()
 
 
 def csv_list(value: str) -> list[str]:
@@ -361,9 +387,46 @@ def gsettings(*args: str) -> str:
     return result.stdout.strip()
 
 
-def detect_resolution() -> tuple[int, int]:
-    """Größte aktuell aktive Monitorauflösung über die Mutter-DBus-Schnittstelle."""
-    fallback = (2560, 1440)
+def _resolution_from_gdk() -> tuple[int, int] | None:
+    """Größte Monitorfläche über GDK.
+
+    Bevorzugter Weg: im Snap sperrt AppArmor den DBus-Aufruf an Mutter, GDK
+    funktioniert dagegen, weil die App Wayland- bzw. X11-Zugriff hat.
+    """
+    try:
+        import gi
+        gi.require_version("Gdk", "4.0")
+        gi.require_version("Gtk", "4.0")
+        from gi.repository import Gdk, Gtk
+    except (ImportError, ValueError) as err:
+        log.debug("PyGObject nicht verfügbar: %s", err)
+        return None
+
+    try:
+        if not Gtk.init_check():
+            log.debug("Keine Verbindung zum Anzeigeserver")
+            return None
+        display = Gdk.Display.get_default()
+        if display is None:
+            return None
+
+        monitors = display.get_monitors()
+        sizes = []
+        for index in range(monitors.get_n_items()):
+            monitor = monitors.get_item(index)
+            area = monitor.get_geometry()
+            scale = monitor.get_scale_factor() or 1
+            sizes.append((area.width * scale, area.height * scale))
+        if not sizes:
+            return None
+        return max(sizes, key=lambda size: size[0] * size[1])
+    except Exception as err:
+        log.debug("GDK-Auflösung nicht ermittelbar: %s", err)
+        return None
+
+
+def _resolution_from_mutter() -> tuple[int, int] | None:
+    """Rückfall für Umgebungen ohne PyGObject."""
     try:
         result = subprocess.run(
             ["gdbus", "call", "--session",
@@ -373,16 +436,28 @@ def detect_resolution() -> tuple[int, int]:
             capture_output=True, text=True, timeout=15,
         )
         if result.returncode != 0:
-            return fallback
+            log.debug("Mutter-Abfrage abgelehnt: %s", result.stderr.strip()[:120])
+            return None
         modes = re.findall(r"'(\d+)x(\d+)@[\d.]+'[^)]*?'is-current': <true>", result.stdout)
         if not modes:
-            return fallback
-        width, height = max(((int(w), int(h)) for w, h in modes), key=lambda wh: wh[0] * wh[1])
-        log.debug("Auflösung erkannt: %dx%d", width, height)
-        return width, height
+            return None
+        return max(((int(w), int(h)) for w, h in modes), key=lambda size: size[0] * size[1])
     except Exception as err:
-        log.debug("Auflösungserkennung fehlgeschlagen: %s", err)
-        return fallback
+        log.debug("Mutter-Abfrage fehlgeschlagen: %s", err)
+        return None
+
+
+def detect_resolution() -> tuple[int, int]:
+    """Größte aktuell aktive Monitorauflösung."""
+    fallback = (2560, 1440)
+    for source, probe in (("GDK", _resolution_from_gdk),
+                          ("Mutter", _resolution_from_mutter)):
+        size = probe()
+        if size:
+            log.debug("Auflösung erkannt über %s: %dx%d", source, *size)
+            return size
+    log.debug("Auflösung nicht ermittelbar, benutze %dx%d", *fallback)
+    return fallback
 
 
 def set_wallpaper(path: Path, picture_options: str) -> None:
@@ -397,21 +472,169 @@ def set_wallpaper(path: Path, picture_options: str) -> None:
     log.info("Hintergrundbild gesetzt: %s", path.name)
 
 
-def send_notification(photo: Photo, path: Path) -> None:
-    if not shutil.which("notify-send"):
-        return
-    credit = f"Foto von {photo.author}"
-    if photo.description:
-        credit += f"\n{photo.description[:120]}"
+def _notify_via_gio(title: str, body: str, icon: Path, desktop_id: str) -> bool:
+    """Benachrichtigung über Gio.
+
+    Bevorzugt, weil ohne Introspection: »gdbus call« fragt vorher die
+    Schnittstelle ab, und genau dieses Introspect verbietet AppArmor im Snap.
+    """
     try:
-        subprocess.run(
-            ["notify-send", "--app-name=Wallpaper", f"--icon={path}",
-             "--hint=string:desktop-entry:de.zurek.UnsplashWallpaper",
-             "Neues Hintergrundbild", credit],
-            timeout=10, check=False,
+        import gi
+        gi.require_version("Gio", "2.0")
+        from gi.repository import Gio, GLib
+    except (ImportError, ValueError):
+        return False
+
+    try:
+        bus = Gio.bus_get_sync(Gio.BusType.SESSION, None)
+        arguments = GLib.Variant(
+            "(susssasa{sv}i)",
+            ("Daily Wallpaper", 0, str(icon), title, body, [],
+             {"desktop-entry": GLib.Variant("s", desktop_id)}, 5000),
         )
+        bus.call_sync("org.freedesktop.Notifications",
+                      "/org/freedesktop/Notifications",
+                      "org.freedesktop.Notifications", "Notify",
+                      arguments, GLib.VariantType("(u)"),
+                      Gio.DBusCallFlags.NONE, 5000, None)
+        return True
     except Exception as err:
-        log.debug("Benachrichtigung fehlgeschlagen: %s", err)
+        log.debug("Gio-Benachrichtigung fehlgeschlagen: %s", err)
+        return False
+
+
+def send_notification(photo: Photo, path: Path) -> None:
+    title = "Neues Hintergrundbild"
+    body = f"Foto von {photo.author}"
+    if photo.description:
+        body += f"\n{photo.description[:120]}"
+    desktop_id = os.environ.get("DESKTOP_ENTRY", "de.zurek.UnsplashWallpaper")
+
+    if _notify_via_gio(title, body, path, desktop_id):
+        return
+
+    if shutil.which("notify-send"):
+        try:
+            subprocess.run(
+                ["notify-send", "--app-name=Wallpaper", f"--icon={path}",
+                 f"--hint=string:desktop-entry:{desktop_id}", title, body],
+                timeout=10, check=False, capture_output=True)
+        except Exception as err:
+            log.debug("Benachrichtigung fehlgeschlagen: %s", err)
+
+
+# --------------------------------------------------------------------------- #
+# Autostart (nur im Snap)
+# --------------------------------------------------------------------------- #
+
+AUTOSTART_FILE = "daily-wallpaper-watcher.desktop"
+
+
+def autostart_path() -> Path | None:
+    """Ziel der Autostart-Datei, oder None ausserhalb eines Snaps."""
+    user_data = os.environ.get("SNAP_USER_DATA")
+    if not user_data:
+        return None
+    return Path(user_data) / ".config/autostart" / AUTOSTART_FILE
+
+
+def set_autostart(enabled: bool) -> bool:
+    """Legt die Autostart-Datei an oder entfernt sie.
+
+    snapd erzeugt sie nicht selbst: der Schlüssel »autostart« in snapcraft.yaml
+    ordnet nur eine Datei einer App zu. Beim Anmelden startet
+    »snap userd --autostart«, was in $SNAP_USER_DATA/.config/autostart liegt.
+    """
+    target = autostart_path()
+    if target is None:
+        return False
+
+    try:
+        if enabled:
+            source = Path(os.environ["SNAP"]) / "meta/gui" / AUTOSTART_FILE
+            target.parent.mkdir(parents=True, exist_ok=True)
+            target.write_text(source.read_text())
+            log.debug("Autostart eingerichtet: %s", target)
+        else:
+            target.unlink(missing_ok=True)
+            log.debug("Autostart entfernt")
+        return True
+    except OSError as err:
+        log.warning("Autostart nicht änderbar: %s", err)
+        return False
+
+
+def sync_autostart(cfg: configparser.ConfigParser) -> None:
+    """Bringt die Autostart-Datei mit der Einstellung in Übereinstimmung."""
+    target = autostart_path()
+    if target is None:
+        return
+    wanted = cfg["schedule"].getboolean("enabled")
+    if wanted != target.exists():
+        set_autostart(wanted)
+
+
+# --------------------------------------------------------------------------- #
+# Zeitplan
+# --------------------------------------------------------------------------- #
+
+def scheduled_time(cfg: configparser.ConfigParser) -> tuple[int, int]:
+    raw = unquote(cfg["schedule"]["time"])
+    try:
+        hour, minute = raw.split(":")
+        return max(0, min(23, int(hour))), max(0, min(59, int(minute)))
+    except ValueError:
+        log.warning("Ungültige Uhrzeit %r im Zeitplan, benutze 09:00", raw)
+        return 9, 0
+
+
+def last_run() -> datetime | None:
+    try:
+        stamp = json.loads(CURRENT_JSON.read_text())["set_at"]
+        return datetime.strptime(stamp, "%Y-%m-%d %H:%M:%S")
+    except (OSError, ValueError, KeyError):
+        return None
+
+
+def is_due(cfg: configparser.ConfigParser, now: datetime | None = None) -> bool:
+    """Ist heute noch kein Bild geholt worden und die Uhrzeit schon erreicht?"""
+    if not cfg["schedule"].getboolean("enabled"):
+        return False
+
+    now = now or datetime.now()
+    previous = last_run()
+    if previous is None:
+        return True                      # noch nie gelaufen -> sofort
+    if previous.date() >= now.date():
+        return False                     # heute schon erledigt
+
+    hour, minute = scheduled_time(cfg)
+    return now >= now.replace(hour=hour, minute=minute, second=0, microsecond=0)
+
+
+def run_watch(query: str | None) -> int:
+    """Ersatz für den systemd-Timer innerhalb eines Snaps.
+
+    Snaps dürfen keine Units ins Home des Benutzers schreiben, und
+    »daemon-scope: user« ist in snapd standardmäßig abgeschaltet. Deshalb
+    läuft hier ein schlanker Prozess, der die Wanduhr abfragt -- das übersteht
+    auch Standby, weil jede Runde neu vergleicht statt herunterzuzählen.
+    """
+    cfg = load_config()
+    interval = max(1, cfg["schedule"].getint("check_every")) * 60
+    log.info("Wach-Modus gestartet, Prüfung alle %d Minuten", interval // 60)
+
+    while True:
+        cfg = load_config()              # Einstellungen können sich ändern
+        try:
+            if is_due(cfg):
+                run_update(cfg, query)
+            else:
+                log.debug("Nichts zu tun")
+        except Exception as err:
+            log.error("Lauf fehlgeschlagen: %s", err)
+            log.debug("Details:", exc_info=True)
+        time.sleep(interval)
 
 
 # --------------------------------------------------------------------------- #
@@ -422,7 +645,7 @@ def run_update(cfg: configparser.ConfigParser, query_override: str | None) -> in
     ensure_session_bus()
 
     wallpaper_cfg = cfg["wallpaper"]
-    target_dir = Path(wallpaper_cfg["directory"]).expanduser()
+    target_dir = expand_path(wallpaper_cfg["directory"])
 
     if wallpaper_cfg["width"].strip().lower() == "auto" or \
        wallpaper_cfg["height"].strip().lower() == "auto":
@@ -462,6 +685,8 @@ def run_update(cfg: configparser.ConfigParser, query_override: str | None) -> in
     if wallpaper_cfg.getboolean("notify"):
         send_notification(photo, path)
 
+    sync_autostart(cfg)
+
     log.info("Fertig -- Foto von %s (%s)", photo.author, photo.page_url or photo.source)
     return 0
 
@@ -470,7 +695,7 @@ def show_status(cfg: configparser.ConfigParser) -> int:
     ensure_session_bus()
     print(f"Konfiguration : {CONFIG_FILE}")
     print(f"Logdatei      : {LOG_FILE}")
-    print(f"Bilderordner  : {Path(cfg['wallpaper']['directory']).expanduser()}")
+    print(f"Bilderordner  : {expand_path(cfg['wallpaper']['directory'])}")
     key = unquote(cfg["unsplash"]["access_key"])
     print(f"Unsplash-Key  : {'gesetzt (' + key[:6] + '...)' if key else 'nicht gesetzt -> Lorem Picsum'}")
 
@@ -485,10 +710,22 @@ def show_status(cfg: configparser.ConfigParser) -> int:
         if current.get("page_url"):
             print(f"Quelle        : {current['page_url']}")
 
-    result = subprocess.run(
-        ["systemctl", "--user", "list-timers", f"{APP}.timer", "--no-pager"],
-        capture_output=True, text=True,
-    )
+    if os.environ.get("SNAP"):
+        hour, minute = scheduled_time(cfg)
+        aktiv = "an" if cfg["schedule"].getboolean("enabled") else "aus"
+        print(f"Zeitplan      : {aktiv}, täglich um {hour:02d}:{minute:02d}")
+        print(f"Jetzt fällig  : {'ja' if is_due(cfg) else 'nein'}")
+        return 0
+
+    try:
+        result = subprocess.run(
+            ["systemctl", "--user", "list-timers", f"{APP}.timer", "--no-pager"],
+            capture_output=True, text=True, timeout=20,
+        )
+    except (OSError, subprocess.SubprocessError) as err:
+        log.debug("systemctl nicht verfügbar: %s", err)
+        return 0
+
     if result.returncode == 0 and result.stdout.strip():
         print("\nTimer:")
         print(result.stdout.rstrip())
@@ -506,6 +743,10 @@ def main() -> int:
                         help="Suchbegriff nur für diesen Lauf")
     parser.add_argument("--config", action="store_true",
                         help="Pfad der Konfigurationsdatei ausgeben")
+    parser.add_argument("--if-due", action="store_true",
+                        help="Nur laufen, wenn heute noch kein Bild geholt wurde")
+    parser.add_argument("--watch", action="store_true",
+                        help="Im Hintergrund laufen und täglich zur eingestellten Zeit wechseln")
     parser.add_argument("-v", "--verbose", action="store_true", help="Debug-Ausgaben")
     args = parser.parse_args()
 
@@ -517,8 +758,13 @@ def main() -> int:
         return 0
     if args.status:
         return show_status(cfg)
+    if args.watch:
+        return run_watch(args.query)
 
     try:
+        if args.if_due and not is_due(cfg):
+            log.info("Heute schon erledigt oder Uhrzeit noch nicht erreicht")
+            return 0
         return run_update(cfg, args.query)
     except Exception as err:
         log.error("Abbruch: %s", err)
