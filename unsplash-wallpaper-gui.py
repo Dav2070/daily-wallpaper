@@ -54,47 +54,62 @@ def load_core():
             sys.modules["uw_core"] = module
             loader.exec_module(module)
             return module
-    raise SystemExit("unsplash-wallpaper.py nicht gefunden")
+    raise SystemExit("unsplash-wallpaper.py not found")
 
 
 core = load_core()
 core.setup_logging(verbose=False)
+
+_ = core._
+ngettext = core.ngettext
 
 
 # --------------------------------------------------------------------------- #
 # Datumsangaben
 # --------------------------------------------------------------------------- #
 
-# Fest hinterlegt statt über das Locale, damit die Anzeige nicht davon abhängt,
-# mit welchem LANG die Anwendung gestartet wurde.
-WEEKDAYS = ("Montag", "Dienstag", "Mittwoch", "Donnerstag",
-            "Freitag", "Samstag", "Sonntag")
-MONTHS = ("Januar", "Februar", "März", "April", "Mai", "Juni", "Juli",
-          "August", "September", "Oktober", "November", "Dezember")
+# Über gettext übersetzt statt über das Locale, damit die Anzeige nicht davon
+# abhängt, mit welchem LANG die Anwendung gestartet wurde.
+def weekday_name(moment: datetime) -> str:
+    return (_("Monday"), _("Tuesday"), _("Wednesday"), _("Thursday"),
+            _("Friday"), _("Saturday"), _("Sunday"))[moment.weekday()]
+
+
+def month_name(moment: datetime) -> str:
+    return (_("January"), _("February"), _("March"), _("April"), _("May"),
+            _("June"), _("July"), _("August"), _("September"), _("October"),
+            _("November"), _("December"))[moment.month - 1]
 
 
 def format_day(moment: datetime) -> str:
-    """»heute«, »morgen«, »am Dienstag«, »am 5. September«."""
+    """»today«, »tomorrow«, »on Tuesday«, »on 5 September«.
+
+    Die Platzhalter stehen im Übersetzungstext, damit jede Sprache
+    Wortstellung und Zeichensetzung selbst bestimmt -- Deutsch braucht etwa
+    »am 5. September« mit Punkt.
+    """
     delta = (moment.date() - date.today()).days
     if delta == 0:
-        return "heute"
+        return _("today")
     if delta == -1:
-        return "gestern"
+        return _("yesterday")
     if delta == 1:
-        return "morgen"
+        return _("tomorrow")
     if delta == -2:
-        return "vorgestern"
+        return _("the day before yesterday")
     if 1 < delta < 7:
-        return f"am {WEEKDAYS[moment.weekday()]}"
+        return _("on {weekday}").format(weekday=weekday_name(moment))
     if -7 < delta < -1:
-        return f"am vergangenen {WEEKDAYS[moment.weekday()]}"
-    day = f"am {moment.day}. {MONTHS[moment.month - 1]}"
-    return day if moment.year == date.today().year else f"{day} {moment.year}"
+        return _("last {weekday}").format(weekday=weekday_name(moment))
+    if moment.year == date.today().year:
+        return _("on {day} {month}").format(day=moment.day, month=month_name(moment))
+    return _("on {day} {month} {year}").format(
+        day=moment.day, month=month_name(moment), year=moment.year)
 
 
 def format_when(moment: datetime) -> str:
-    """»heute um 09:03«, »am 5. September um 18:45«."""
-    return f"{format_day(moment)} um {moment:%H:%M}"
+    """»today at 09:03«, »on 5 September at 18:45«."""
+    return _("{day} at {time}").format(day=format_day(moment), time=f"{moment:%H:%M}")
 
 
 def format_relative(moment: datetime) -> str:
@@ -103,27 +118,45 @@ def format_relative(moment: datetime) -> str:
     if seconds < 0:
         return format_when(moment)
     if seconds < 90:
-        return "gerade eben"
+        return _("just now")
+
     minutes = int(seconds // 60)
     if minutes < 60:
-        return f"vor {minutes} Minuten"
+        return ngettext("{count} minute ago", "{count} minutes ago",
+                        minutes).format(count=minutes)
+
     hours = int(seconds // 3600)
     if hours < 12 and moment.date() == date.today():
-        return "vor 1 Stunde" if hours == 1 else f"vor {hours} Stunden"
+        return ngettext("{count} hour ago", "{count} hours ago",
+                        hours).format(count=hours)
     return format_when(moment)
 
 
 def format_caption(moment: datetime) -> str:
     """Kurzform fürs Verlaufsraster.
 
-    Bei heute und gestern zusätzlich die Uhrzeit, weil an einem Tag mehrere
-    Bilder geladen worden sein können.
+    Ohne Präposition, anders als format_day: unter einer Kachel steht
+    »17. August«, nicht »am 17. August«. Bei heute und gestern zusätzlich die
+    Uhrzeit, weil an einem Tag mehrere Bilder geladen worden sein können.
     """
-    day = format_day(moment).removeprefix("am ")
-    # Nicht .capitalize() -- das würde "17. August" zu "17. august" machen.
-    day = day[0].upper() + day[1:]
-    if (moment.date() - date.today()).days in (0, -1):
-        return f"{day}, {moment:%H:%M}"
+    delta = (moment.date() - date.today()).days
+    if delta == 0:
+        day = _("today")
+    elif delta == -1:
+        day = _("yesterday")
+    elif delta == -2:
+        day = _("the day before yesterday")
+    elif -7 < delta < 0:
+        day = weekday_name(moment)
+    elif moment.year == date.today().year:
+        day = _("{day} {month}").format(day=moment.day, month=month_name(moment))
+    else:
+        day = _("{day} {month} {year}").format(
+            day=moment.day, month=month_name(moment), year=moment.year)
+
+    day = day[0].upper() + day[1:]      # bei Ziffern wirkungslos
+    if delta in (0, -1):
+        return _("{day}, {time}").format(day=day, time=f"{moment:%H:%M}")
     return day
 
 
@@ -191,11 +224,11 @@ class ConfigSchedule:
     @classmethod
     def next_run(cls) -> str:
         if not cls.enabled():
-            return "Zeitplan ist aus"
+            return _("Schedule is off")
 
         last = core.last_run()
         if last is None:
-            return "Erster Lauf steht aus"
+            return _("First run pending")
 
         hour, minute = cls.scheduled_time()
         moment = datetime.now().replace(hour=hour, minute=minute,
@@ -203,9 +236,9 @@ class ConfigSchedule:
         if last.date() >= moment.date() or moment < datetime.now():
             moment += timedelta(days=1)
 
-        text = f"Nächster Lauf {format_when(moment)}"
+        text = _("Next run {when}").format(when=format_when(moment))
         if last:
-            text += f"   ·   zuletzt {format_relative(last)}"
+            text += "   ·   " + _("last {when}").format(when=format_relative(last))
         return text
 
     @staticmethod
@@ -255,16 +288,17 @@ class SystemdTimer:
     @classmethod
     def next_run(cls) -> str:
         if not cls.installed():
-            return "Zeitplan nicht installiert"
+            return _("Schedule not installed")
         if not cls.enabled():
-            return "Zeitplan ist aus"
+            return _("Schedule is off")
 
         moment = cls._timestamp("NextElapseUSecRealtime")
-        text = f"Nächster Lauf {format_when(moment)}" if moment else "Nächster Lauf unbekannt"
+        text = (_("Next run {when}").format(when=format_when(moment)) if moment
+                else _("Next run unknown"))
 
         last = cls._timestamp("LastTriggerUSec")
         if last:
-            text += f"   ·   zuletzt {format_relative(last)}"
+            text += "   ·   " + _("last {when}").format(when=format_relative(last))
         return text
 
     @classmethod
@@ -305,15 +339,17 @@ Timer = ConfigSchedule if os.environ.get("SNAP") else SystemdTimer
 # Hauptfenster
 # --------------------------------------------------------------------------- #
 
-ORIENTATIONS = [("landscape", "Querformat"), ("portrait", "Hochformat"), ("squarish", "Quadratisch")]
-FITTINGS = [("zoom", "Zoom (füllt aus)"), ("scaled", "Eingepasst"), ("centered", "Zentriert"),
-            ("stretched", "Gestreckt"), ("spanned", "Über alle Monitore")]
+ORIENTATIONS = [("landscape", _("Landscape")), ("portrait", _("Portrait")),
+                ("squarish", _("Square"))]
+FITTINGS = [("zoom", _("Zoom (fills the screen)")), ("scaled", _("Scaled")),
+            ("centered", _("Centered")), ("stretched", _("Stretched")),
+            ("spanned", _("Spanned across monitors"))]
 
 
 class Window(Adw.ApplicationWindow):
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
-        self.set_title("Unsplash Wallpaper")
+        self.set_title(_("Daily Wallpaper"))
         self.set_default_size(880, 700)
         self.busy = False
         self._save_timeouts: dict[str, int] = {}
@@ -324,20 +360,20 @@ class Window(Adw.ApplicationWindow):
 
         self.stack = Adw.ViewStack()
         self.stack.add_titled_with_icon(self._build_current(), "current",
-                                        "Aktuell", "preferences-desktop-wallpaper-symbolic")
+                                        _("Current"), "preferences-desktop-wallpaper-symbolic")
         self.stack.add_titled_with_icon(self._build_history(), "history",
-                                        "Verlauf", "view-grid-symbolic")
+                                        _("History"), "view-grid-symbolic")
         self.stack.add_titled_with_icon(self._build_settings(), "settings",
-                                        "Einstellungen", "preferences-system-symbolic")
+                                        _("Settings"), "preferences-system-symbolic")
 
         header = Adw.HeaderBar()
         header.set_title_widget(Adw.ViewSwitcher(stack=self.stack,
                                                  policy=Adw.ViewSwitcherPolicy.WIDE))
 
         menu = Gio.Menu()
-        menu.append("Bilderordner öffnen", "win.open-folder")
-        menu.append("Protokoll anzeigen", "win.open-log")
-        menu.append("Über", "win.about")
+        menu.append(_("Open image folder"), "win.open-folder")
+        menu.append(_("Show log"), "win.open-log")
+        menu.append(_("About"), "win.about")
         header.pack_end(Gtk.MenuButton(icon_name="open-menu-symbolic", menu_model=menu))
 
         toolbar = Adw.ToolbarView()
@@ -382,12 +418,12 @@ class Window(Adw.ApplicationWindow):
         self.taken.add_css_class("dim-label")
 
         self.query_entry = Gtk.SearchEntry(
-            placeholder_text="Suchbegriff für diesen Lauf (leer = aus den Einstellungen)",
+            placeholder_text=_("Search term for this run (empty = use settings)"),
             hexpand=True)
         self.query_entry.connect("activate", lambda *_: self.fetch())
 
         self.spinner = Gtk.Spinner()
-        content = Adw.ButtonContent(label="Neues Bild", icon_name="view-refresh-symbolic")
+        content = Adw.ButtonContent(label=_("New image"), icon_name="view-refresh-symbolic")
         self.fetch_button = Gtk.Button(child=content)
         self.fetch_button.add_css_class("suggested-action")
         self.fetch_button.add_css_class("pill")
@@ -425,8 +461,8 @@ class Window(Adw.ApplicationWindow):
             margin_top=18, margin_bottom=18, margin_start=18, margin_end=18)
 
         self.history_empty = Adw.StatusPage(
-            icon_name="image-x-generic-symbolic", title="Noch keine Bilder",
-            description="Hole dir auf der Seite »Aktuell« das erste Wallpaper.")
+            icon_name="image-x-generic-symbolic", title=_("No images yet"),
+            description=_("Fetch your first wallpaper on the “Current” page."))
 
         self.history_stack = Gtk.Stack()
         self.history_stack.add_named(
@@ -442,53 +478,54 @@ class Window(Adw.ApplicationWindow):
 
         # --- Unsplash ---
         group = Adw.PreferencesGroup(
-            title="Unsplash",
-            description="Ohne Access Key wird Lorem Picsum als Ersatzquelle benutzt.")
+            title=_("Unsplash"),
+            description=_("Without an access key, Lorem Picsum is used as a "
+                          "fallback source."))
 
-        self.key_row = Adw.PasswordEntryRow(title="Access Key")
+        self.key_row = Adw.PasswordEntryRow(title=_("Access key"))
         self.key_row.set_text(core.unquote(unsplash["access_key"]))
         self.key_row.connect("changed", self._debounced, "unsplash", "access_key")
         group.add(self.key_row)
 
-        self.query_row = Adw.EntryRow(title="Suchbegriffe (kommagetrennt)")
+        self.query_row = Adw.EntryRow(title=_("Search terms (comma separated)"))
         self.query_row.set_text(unsplash["query"])
         self.query_row.connect("changed", self._debounced, "unsplash", "query")
         group.add(self.query_row)
 
-        self.collections_row = Adw.EntryRow(title="Collection-IDs (haben Vorrang)")
+        self.collections_row = Adw.EntryRow(title=_("Collection IDs (take precedence)"))
         self.collections_row.set_text(unsplash["collections"])
         self.collections_row.connect("changed", self._debounced, "unsplash", "collections")
         group.add(self.collections_row)
 
-        self.orientation_row = self._combo("Ausrichtung", ORIENTATIONS,
+        self.orientation_row = self._combo(_("Orientation"), ORIENTATIONS,
                                            unsplash["orientation"], "unsplash", "orientation")
         group.add(self.orientation_row)
         page.add(group)
 
         # --- Hintergrundbild ---
-        group = Adw.PreferencesGroup(title="Hintergrundbild")
+        group = Adw.PreferencesGroup(title=_("Wallpaper"))
 
-        self.fit_row = self._combo("Skalierung", FITTINGS,
+        self.fit_row = self._combo(_("Scaling"), FITTINGS,
                                    wallpaper["picture_options"], "wallpaper", "picture_options")
         group.add(self.fit_row)
 
         self.keep_row = Adw.SpinRow.new_with_range(0, 100, 1)
-        self.keep_row.set_title("Bilder behalten")
-        self.keep_row.set_subtitle("Ältere werden gelöscht. 0 = alle behalten")
+        self.keep_row.set_title(_("Images to keep"))
+        self.keep_row.set_subtitle(_("Older ones are deleted. 0 = keep all"))
         self.keep_row.set_value(wallpaper.getint("keep"))
         self.keep_row.connect("notify::value", lambda row, _:
                               write_setting("wallpaper", "keep", str(int(row.get_value()))))
         group.add(self.keep_row)
 
-        self.notify_row = Adw.SwitchRow(title="Benachrichtigung anzeigen",
-                                        subtitle="Mit Namen des Fotografen")
+        self.notify_row = Adw.SwitchRow(title=_("Show notification"),
+                                        subtitle=_("Naming the photographer"))
         self.notify_row.set_active(wallpaper.getboolean("notify"))
         self.notify_row.connect("notify::active", lambda row, _:
                                 write_setting("wallpaper", "notify",
                                               "true" if row.get_active() else "false"))
         group.add(self.notify_row)
 
-        folder_row = Adw.ActionRow(title="Bilderordner",
+        folder_row = Adw.ActionRow(title=_("Image folder"),
                                    subtitle=str(core.expand_path(wallpaper["directory"])))
         button = Gtk.Button(icon_name="folder-open-symbolic", valign=Gtk.Align.CENTER)
         button.add_css_class("flat")
@@ -498,31 +535,36 @@ class Window(Adw.ApplicationWindow):
         page.add(group)
 
         # --- Zeitplan ---
-        group = Adw.PreferencesGroup(
-            title="Zeitplan",
-            description="Wird per systemd-Timer ausgeführt und nachgeholt, "
-                        "falls der Rechner zur Zeit aus war.")
+        # Im Snap gibt es keinen systemd-Timer -- die Erklärung muss zum
+        # tatsächlich benutzten Mechanismus passen.
+        if os.environ.get("SNAP"):
+            schedule_hint = _("Handled by a background service that starts with "
+                              "your session and catches up a missed day.")
+        else:
+            schedule_hint = _("Run by a systemd timer, and caught up if the "
+                              "computer was switched off at that time.")
+        group = Adw.PreferencesGroup(title=_("Schedule"), description=schedule_hint)
 
         hour, minute = Timer.scheduled_time()
-        self.timer_row = Adw.SwitchRow(title="Täglich automatisch wechseln")
+        self.timer_row = Adw.SwitchRow(title=_("Change automatically every day"))
         self.timer_row.set_active(Timer.installed() and Timer.enabled())
         self.timer_row.set_sensitive(Timer.installed())
         if not Timer.installed():
-            self.timer_row.set_subtitle("Timer nicht installiert -- ./install.sh ausführen")
+            self.timer_row.set_subtitle(_("Timer not installed -- run ./install.sh"))
         elif os.environ.get("SNAP"):
-            self.timer_row.set_subtitle("Wird vom Hintergrunddienst des Snaps ausgeführt")
+            self.timer_row.set_subtitle(_("Run by the background service of the snap"))
         self.timer_row.connect("notify::active", self.on_timer_toggled)
         group.add(self.timer_row)
 
         self.hour_row = Adw.SpinRow.new_with_range(0, 23, 1)
-        self.hour_row.set_title("Stunde")
+        self.hour_row.set_title(_("Hour"))
         self.hour_row.set_value(hour)
         self.hour_row.set_sensitive(Timer.installed())
         self.hour_row.connect("notify::value", self.on_time_changed)
         group.add(self.hour_row)
 
         self.minute_row = Adw.SpinRow.new_with_range(0, 59, 5)
-        self.minute_row.set_title("Minute")
+        self.minute_row.set_title(_("Minute"))
         self.minute_row.set_value(minute)
         self.minute_row.set_sensitive(Timer.installed())
         self.minute_row.connect("notify::value", self.on_time_changed)
@@ -562,20 +604,22 @@ class Window(Adw.ApplicationWindow):
     def refresh_current(self) -> None:
         self.schedule_label.set_text(Timer.next_run())
         if not core.CURRENT_JSON.exists():
-            self.credit.set_text("Noch kein Wallpaper gesetzt")
-            self.subtitle.set_text("Klicke auf »Neues Bild«.")
+            self.credit.set_text(_("No wallpaper set yet"))
+            self.subtitle.set_text(_("Click “New image”."))
             self.taken.set_text("")
             return
         data = json.loads(core.CURRENT_JSON.read_text())
         path = Path(data.get("path", ""))
         if path.exists():
             self.picture.set_filename(str(path))
-        self.credit.set_text(f"Foto von {data.get('author', 'Unbekannt')}")
+        self.credit.set_text(_("Photo by {author}").format(
+            author=data.get("author") or _("Unknown")))
         self.subtitle.set_text(data.get("description") or "")
         self.subtitle.set_visible(bool(data.get("description")))
 
         moment = parse_stamp(data.get("set_at", ""))
-        self.taken.set_text(f"Gesetzt {format_relative(moment)}" if moment else "")
+        self.taken.set_text(_("Set {when}").format(when=format_relative(moment))
+                            if moment else "")
 
     def refresh_history(self) -> None:
         while (child := self.flowbox.get_first_child()) is not None:
@@ -598,8 +642,9 @@ class Window(Adw.ApplicationWindow):
         moment = datetime.fromtimestamp(path.stat().st_mtime)
         author = core.load_history().get(path.name, {}).get("author")
 
-        tooltip = [f"Foto von {author}"] if author else []
-        tooltip += [f"Geladen {format_when(moment)}", "Klicken zum Setzen"]
+        tooltip = [_("Photo by {author}").format(author=author)] if author else []
+        tooltip += [_("Downloaded {when}").format(when=format_when(moment)),
+                    _("Click to set")]
         button = Gtk.Button(child=frame, hexpand=True,
                             tooltip_text="\n".join(tooltip))
         button.add_css_class("flat")
@@ -655,11 +700,11 @@ class Window(Adw.ApplicationWindow):
     def _fetch_done(self, error: Exception | None) -> bool:
         self._set_busy(False)
         if error:
-            self.toast(f"Fehlgeschlagen: {error}")
+            self.toast(_("Failed: {error}").format(error=error))
         else:
             self.refresh_current()
             self.refresh_history()
-            self.toast("Neues Hintergrundbild gesetzt")
+            self.toast(_("New wallpaper set"))
         return GLib.SOURCE_REMOVE
 
     def apply_existing(self, path: Path) -> None:
@@ -673,14 +718,15 @@ class Window(Adw.ApplicationWindow):
                     "set_at": time.strftime("%Y-%m-%d %H:%M:%S")}
             core.CURRENT_JSON.write_text(json.dumps(data, indent=2, ensure_ascii=False))
             self.refresh_current()
-            self.toast(f"Gesetzt: {path.name}")
+            self.toast(_("Set: {name}").format(name=path.name))
         except Exception as err:
-            self.toast(f"Fehlgeschlagen: {err}")
+            self.toast(_("Failed: {error}").format(error=err))
 
     def on_timer_toggled(self, row, _param) -> None:
         Timer.set_enabled(row.get_active())
         self.schedule_label.set_text(Timer.next_run())
-        self.toast("Zeitplan aktiviert" if row.get_active() else "Zeitplan deaktiviert")
+        self.toast(_("Schedule enabled") if row.get_active()
+                   else _("Schedule disabled"))
 
     def on_time_changed(self, *_args) -> None:
         Timer.set_time(int(self.hour_row.get_value()), int(self.minute_row.get_value()))
@@ -695,15 +741,15 @@ class Window(Adw.ApplicationWindow):
         if core.LOG_FILE.exists():
             Gtk.FileLauncher(file=Gio.File.new_for_path(str(core.LOG_FILE))).launch(self, None, None)
         else:
-            self.toast("Noch kein Protokoll vorhanden")
+            self.toast(_("No log available yet"))
 
     def on_about(self, *_args) -> None:
         about = Adw.AboutDialog(
-            application_name="Unsplash Wallpaper",
+            application_name=_("Daily Wallpaper"),
             application_icon="daily-wallpaper" if os.environ.get("SNAP") else APP_ID,
             developer_name="unsplash-wallpaper",
-            version="1.0",
-            comments="Setzt täglich ein Foto von Unsplash als Hintergrundbild.",
+            version="1.1",
+            comments=_("Sets a photo from Unsplash as the wallpaper every day."),
             website="https://unsplash.com",
             license_type=Gtk.License.MIT_X11)
         about.present(self)
@@ -711,7 +757,14 @@ class Window(Adw.ApplicationWindow):
 
 class Application(Adw.Application):
     def __init__(self):
-        super().__init__(application_id=APP_ID, flags=Gio.ApplicationFlags.DEFAULT_FLAGS)
+        # Im Snap darf die Anwendung ihren DBus-Namen nicht besitzen: dafür
+        # bräuchte es einen dbus-Slot, und der zieht eine manuelle Prüfung im
+        # Store nach sich. NON_UNIQUE verzichtet von vornherein darauf, statt
+        # bei jedem Start an einer AppArmor-Ablehnung zu scheitern. Preis ist
+        # die Einzelinstanz -- ein zweiter Start öffnet ein zweites Fenster.
+        flags = (Gio.ApplicationFlags.NON_UNIQUE if os.environ.get("SNAP")
+                 else Gio.ApplicationFlags.DEFAULT_FLAGS)
+        super().__init__(application_id=APP_ID, flags=flags)
 
     def do_activate(self):
         window = self.props.active_window or Window(application=self)

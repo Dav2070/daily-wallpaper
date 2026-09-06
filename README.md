@@ -83,6 +83,36 @@ Benachrichtigungen sie über den Namen `de.zurek.UnsplashWallpaper` finden.
 Die symbolische Fassung ist bewusst auf Sonne und zwei Gipfel reduziert, weil
 im farbigen Symbol bei 16 px kein Detail mehr erkennbar bleibt.
 
+## Übersetzungen
+
+Die App spricht Englisch und Deutsch. Quellsprache ist Englisch: wer eine
+Locale ohne eigene Übersetzung hat, bekommt damit Englisch statt Deutsch.
+
+```
+po/daily-wallpaper.pot   Vorlage, aus dem Quellcode erzeugt
+po/de.po                 deutsche Übersetzung
+tools/i18n.py            Extraktion und .mo-Erzeugung
+```
+
+`tools/i18n.py` ersetzt `xgettext` und `msgfmt`, damit weder der Snap-Bau noch
+die Desktop-Installation das Paket `gettext` braucht. Die `.po`-Dateien sind
+Standardformat und lassen sich mit Poedit bearbeiten.
+
+```bash
+# nach Änderungen an übersetzbaren Texten
+python3 tools/i18n.py extract unsplash-wallpaper.py unsplash-wallpaper-gui.py
+
+# zum Ausprobieren aus dem Projektordner heraus
+python3 tools/i18n.py compile --output locale
+LANGUAGE=de python3 unsplash-wallpaper-gui.py
+```
+
+`install.sh` und der Snap-Bau kompilieren die Übersetzungen selbst; `locale/`
+ist erzeugt und nicht eingecheckt.
+
+Neue Sprache: `po/daily-wallpaper.pot` nach `po/<code>.po` kopieren, ausfüllen,
+fertig — gefunden wird sie automatisch.
+
 ## Snap
 
 `snap/snapcraft.yaml` baut die App als Snap namens `daily-wallpaper`.

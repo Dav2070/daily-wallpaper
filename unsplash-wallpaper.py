@@ -13,6 +13,7 @@ from __future__ import annotations
 
 import argparse
 import configparser
+import gettext
 import json
 import logging
 import logging.handlers
@@ -33,6 +34,33 @@ from pathlib import Path
 APP = "unsplash-wallpaper"
 USER_AGENT = f"{APP}/1.0 (+https://unsplash.com/developers)"
 
+GETTEXT_DOMAIN = "daily-wallpaper"
+
+
+def _find_localedir() -> str | None:
+    """Sucht den Ordner, der die kompilierten Übersetzungen enthält."""
+    candidates = []
+    if snap := os.environ.get("SNAP"):
+        candidates.append(Path(snap) / "usr/share/locale")
+    candidates += [
+        Path(__file__).resolve().parent / "locale",   # Projektordner
+        Path.home() / ".local/share/locale",
+        Path("/usr/share/locale"),
+    ]
+    for directory in candidates:
+        if directory.is_dir() and any(
+                directory.glob(f"*/LC_MESSAGES/{GETTEXT_DOMAIN}.mo")):
+            return str(directory)
+    return None
+
+
+# Quellsprache ist Englisch: wer eine Locale ohne eigene Übersetzung hat,
+# bekommt damit Englisch statt Deutsch zu sehen.
+_translation = gettext.translation(GETTEXT_DOMAIN, _find_localedir(), fallback=True)
+_ = _translation.gettext
+ngettext = _translation.ngettext
+
+
 CONFIG_DIR = Path(os.environ.get("XDG_CONFIG_HOME", Path.home() / ".config")) / APP
 CONFIG_FILE = CONFIG_DIR / "config.ini"
 STATE_DIR = Path(os.environ.get("XDG_STATE_HOME", Path.home() / ".local/state")) / APP
@@ -42,53 +70,53 @@ HISTORY_JSON = STATE_DIR / "history.json"
 
 DEFAULT_CONFIG = """\
 [unsplash]
-# Kostenloser Access Key von https://unsplash.com/oauth/applications
-# Ohne Key wird automatisch Lorem Picsum (liefert ebenfalls Unsplash-Fotos)
-# als Ersatzquelle benutzt.
+# Free access key from https://unsplash.com/oauth/applications
+# Without a key, Lorem Picsum (which also serves Unsplash photos) is used
+# as a fallback source.
 access_key =
 
-# Suchbegriffe, kommagetrennt. Pro Lauf wird einer zufällig gewählt.
-# Leer lassen für komplett zufällige Fotos.
+# Search terms, comma separated. One is picked at random per run.
+# Leave empty for completely random photos.
 query = landscape, nature, mountains, ocean
 
-# Optional: IDs von Unsplash-Collections, kommagetrennt (statt query).
+# Optional: Unsplash collection IDs, comma separated (instead of query).
 collections =
 
 # landscape | portrait | squarish
 orientation = landscape
 
-# Nur Fotos, die als "Content-Safe" markiert sind
+# Only photos flagged as content-safe
 content_filter = high
 
 [wallpaper]
-# Zielordner für die heruntergeladenen Bilder
+# Target folder for downloaded images
 directory = ~/Pictures/Wallpapers
 
-# So viele Bilder behalten, ältere werden gelöscht (0 = alle behalten)
+# Keep this many images, older ones are deleted (0 = keep all)
 keep = 10
 
 # zoom | scaled | centered | stretched | wallpaper | spanned
 picture_options = zoom
 
-# Bildbreite/-höhe. "auto" ermittelt die Auflösung über GNOME/Mutter.
+# Image width/height. "auto" detects the monitor resolution.
 width = auto
 height = auto
 
-# JPEG-Qualität beim Ausliefern durch Unsplash (1-100)
+# JPEG quality requested from Unsplash (1-100)
 quality = 85
 
-# Desktop-Benachrichtigung mit Fotograf anzeigen
+# Show a desktop notification naming the photographer
 notify = true
 
 [schedule]
-# Wird vom Wach-Modus (--watch) und von --if-due ausgewertet. Ausserhalb eines
-# Snaps uebernimmt stattdessen der systemd-Timer die Ausfuehrung.
+# Evaluated by watch mode (--watch) and by --if-due. Outside a snap the
+# systemd timer runs the job instead.
 enabled = true
 
-# Uhrzeit des taeglichen Wechsels
+# Time of the daily change
 time = 09:00
 
-# Abstand der Pruefungen im Wach-Modus, in Minuten
+# Interval between checks in watch mode, in minutes
 check_every = 15
 """
 
@@ -103,7 +131,7 @@ def load_config() -> configparser.ConfigParser:
     CONFIG_DIR.mkdir(parents=True, exist_ok=True)
     if not CONFIG_FILE.exists():
         CONFIG_FILE.write_text(DEFAULT_CONFIG)
-        log.info("Standardkonfiguration angelegt: %s", CONFIG_FILE)
+        log.info(_("Created default configuration: %s"), CONFIG_FILE)
 
     cfg = configparser.ConfigParser()
     cfg.read_string(DEFAULT_CONFIG)      # Defaults als Basis ...
@@ -191,10 +219,10 @@ def with_retries(func, attempts: int = 5, base_delay: float = 5.0):
             if attempt == attempts:
                 raise
             delay = base_delay * (2 ** (attempt - 1)) + random.uniform(0, 3)
-            log.warning("Versuch %d/%d fehlgeschlagen (%s), warte %.0fs",
+            log.warning(_("Attempt %d/%d failed (%s), retrying in %.0fs"),
                         attempt, attempts, err, delay)
             time.sleep(delay)
-    raise RuntimeError("unerreichbar")
+    raise RuntimeError("unreachable")
 
 
 # --------------------------------------------------------------------------- #
@@ -206,7 +234,7 @@ class Photo:
     source: str
     id: str
     image_url: str
-    author: str = "Unbekannt"
+    author: str = "Unknown"
     author_url: str = ""
     page_url: str = ""
     description: str = ""
@@ -243,7 +271,7 @@ def fetch_from_unsplash(cfg, access_key: str, query: str | None,
     headers = {"Authorization": f"Client-ID {access_key}",
                "Accept-Version": "v1"}
 
-    log.info("Frage Unsplash-API an (query=%r, orientation=%s)",
+    log.info(_("Querying the Unsplash API (query=%r, orientation=%s)"),
              query or "-", params["orientation"])
     data = with_retries(lambda: http_json(url, headers))
 
@@ -256,7 +284,7 @@ def fetch_from_unsplash(cfg, access_key: str, query: str | None,
         source="unsplash",
         id=data.get("id", "unknown"),
         image_url=sized_url(data["urls"]["raw"], width, height, quality),
-        author=user.get("name") or "Unbekannt",
+        author=user.get("name") or _("Unknown"),
         author_url=(user.get("links") or {}).get("html", ""),
         page_url=(data.get("links") or {}).get("html", ""),
         description=(data.get("description") or data.get("alt_description") or "").strip(),
@@ -266,7 +294,7 @@ def fetch_from_unsplash(cfg, access_key: str, query: str | None,
 
 def fetch_from_picsum(width: int, height: int) -> Photo:
     """Ersatzquelle ohne API-Key. Lorem Picsum liefert Fotos von Unsplash aus."""
-    log.info("Kein Unsplash-Key konfiguriert -- benutze Lorem Picsum")
+    log.info(_("No Unsplash key configured -- using Lorem Picsum"))
     url = f"https://picsum.photos/{width}/{height}"
 
     def resolve() -> tuple[str, str]:
@@ -284,7 +312,7 @@ def fetch_from_picsum(width: int, height: int) -> Photo:
         photo.author = info.get("author") or photo.author
         photo.page_url = info.get("url", "")
     except Exception as err:                       # nur Metadaten, nicht kritisch
-        log.debug("Picsum-Metadaten nicht abrufbar: %s", err)
+        log.debug("Picsum metadata unavailable: %s", err)
     return photo
 
 
@@ -294,9 +322,9 @@ def notify_unsplash_download(photo: Photo, access_key: str) -> None:
         return
     try:
         http_json(photo.download_location, {"Authorization": f"Client-ID {access_key}"})
-        log.debug("Unsplash-Download registriert")
+        log.debug("Unsplash download registered")
     except Exception as err:
-        log.debug("Download-Ping fehlgeschlagen: %s", err)
+        log.debug("Download ping failed: %s", err)
 
 
 # --------------------------------------------------------------------------- #
@@ -321,13 +349,13 @@ def download_image(photo: Photo, target_dir: Path) -> Path:
     header = temp_path.read_bytes()[:8]
     if not any(header.startswith(magic) for magic in IMAGE_MAGIC):
         temp_path.unlink(missing_ok=True)
-        raise RuntimeError("Heruntergeladene Datei ist kein Bild")
+        raise RuntimeError(_("The downloaded file is not an image"))
     if temp_path.stat().st_size < 10_000:
         temp_path.unlink(missing_ok=True)
-        raise RuntimeError("Heruntergeladene Datei ist verdächtig klein")
+        raise RuntimeError(_("The downloaded file is suspiciously small"))
 
     temp_path.replace(final_path)
-    log.info("Gespeichert: %s (%.1f MB)", final_path, final_path.stat().st_size / 1e6)
+    log.info(_("Saved: %s (%.1f MB)"), final_path, final_path.stat().st_size / 1e6)
     return final_path
 
 
@@ -360,7 +388,7 @@ def prune_old(target_dir: Path, keep: int, protect: Path) -> None:
     )
     for old in images[max(keep - 1, 0):]:
         old.unlink(missing_ok=True)
-        log.info("Gelöscht (Aufräumen): %s", old.name)
+        log.info(_("Deleted during cleanup: %s"), old.name)
 
 
 # --------------------------------------------------------------------------- #
@@ -377,7 +405,7 @@ def ensure_session_bus() -> None:
     bus = Path(f"/run/user/{os.getuid()}/bus")
     if bus.exists():
         os.environ["DBUS_SESSION_BUS_ADDRESS"] = f"unix:path={bus}"
-        log.debug("DBUS_SESSION_BUS_ADDRESS gesetzt auf %s", bus)
+        log.debug("DBUS_SESSION_BUS_ADDRESS set to %s", bus)
 
 
 def gsettings(*args: str) -> str:
@@ -399,12 +427,12 @@ def _resolution_from_gdk() -> tuple[int, int] | None:
         gi.require_version("Gtk", "4.0")
         from gi.repository import Gdk, Gtk
     except (ImportError, ValueError) as err:
-        log.debug("PyGObject nicht verfügbar: %s", err)
+        log.debug("PyGObject unavailable: %s", err)
         return None
 
     try:
         if not Gtk.init_check():
-            log.debug("Keine Verbindung zum Anzeigeserver")
+            log.debug("No connection to the display server")
             return None
         display = Gdk.Display.get_default()
         if display is None:
@@ -421,7 +449,7 @@ def _resolution_from_gdk() -> tuple[int, int] | None:
             return None
         return max(sizes, key=lambda size: size[0] * size[1])
     except Exception as err:
-        log.debug("GDK-Auflösung nicht ermittelbar: %s", err)
+        log.debug("Could not determine resolution via GDK: %s", err)
         return None
 
 
@@ -436,14 +464,14 @@ def _resolution_from_mutter() -> tuple[int, int] | None:
             capture_output=True, text=True, timeout=15,
         )
         if result.returncode != 0:
-            log.debug("Mutter-Abfrage abgelehnt: %s", result.stderr.strip()[:120])
+            log.debug("Mutter query denied: %s", result.stderr.strip()[:120])
             return None
         modes = re.findall(r"'(\d+)x(\d+)@[\d.]+'[^)]*?'is-current': <true>", result.stdout)
         if not modes:
             return None
         return max(((int(w), int(h)) for w, h in modes), key=lambda size: size[0] * size[1])
     except Exception as err:
-        log.debug("Mutter-Abfrage fehlgeschlagen: %s", err)
+        log.debug("Mutter query failed: %s", err)
         return None
 
 
@@ -454,9 +482,9 @@ def detect_resolution() -> tuple[int, int]:
                           ("Mutter", _resolution_from_mutter)):
         size = probe()
         if size:
-            log.debug("Auflösung erkannt über %s: %dx%d", source, *size)
+            log.debug("Resolution detected via %s: %dx%d", source, *size)
             return size
-    log.debug("Auflösung nicht ermittelbar, benutze %dx%d", *fallback)
+    log.debug("Resolution unavailable, using %dx%d", *fallback)
     return fallback
 
 
@@ -468,8 +496,8 @@ def set_wallpaper(path: Path, picture_options: str) -> None:
     try:
         gsettings("set", "org.gnome.desktop.screensaver", "picture-uri", uri)
     except RuntimeError as err:
-        log.debug("Sperrbildschirm nicht gesetzt: %s", err)
-    log.info("Hintergrundbild gesetzt: %s", path.name)
+        log.debug("Lock screen not set: %s", err)
+    log.info(_("Wallpaper set: %s"), path.name)
 
 
 def _notify_via_gio(title: str, body: str, icon: Path, desktop_id: str) -> bool:
@@ -499,13 +527,13 @@ def _notify_via_gio(title: str, body: str, icon: Path, desktop_id: str) -> bool:
                       Gio.DBusCallFlags.NONE, 5000, None)
         return True
     except Exception as err:
-        log.debug("Gio-Benachrichtigung fehlgeschlagen: %s", err)
+        log.debug("Gio notification failed: %s", err)
         return False
 
 
 def send_notification(photo: Photo, path: Path) -> None:
-    title = "Neues Hintergrundbild"
-    body = f"Foto von {photo.author}"
+    title = _("New wallpaper")
+    body = _("Photo by {author}").format(author=photo.author)
     if photo.description:
         body += f"\n{photo.description[:120]}"
     desktop_id = os.environ.get("DESKTOP_ENTRY", "de.zurek.UnsplashWallpaper")
@@ -520,7 +548,7 @@ def send_notification(photo: Photo, path: Path) -> None:
                  f"--hint=string:desktop-entry:{desktop_id}", title, body],
                 timeout=10, check=False, capture_output=True)
         except Exception as err:
-            log.debug("Benachrichtigung fehlgeschlagen: %s", err)
+            log.debug("Notification failed: %s", err)
 
 
 # --------------------------------------------------------------------------- #
@@ -554,13 +582,13 @@ def set_autostart(enabled: bool) -> bool:
             source = Path(os.environ["SNAP"]) / "meta/gui" / AUTOSTART_FILE
             target.parent.mkdir(parents=True, exist_ok=True)
             target.write_text(source.read_text())
-            log.debug("Autostart eingerichtet: %s", target)
+            log.debug("Autostart installed: %s", target)
         else:
             target.unlink(missing_ok=True)
-            log.debug("Autostart entfernt")
+            log.debug("Autostart removed")
         return True
     except OSError as err:
-        log.warning("Autostart nicht änderbar: %s", err)
+        log.warning(_("Could not change autostart: %s"), err)
         return False
 
 
@@ -584,7 +612,7 @@ def scheduled_time(cfg: configparser.ConfigParser) -> tuple[int, int]:
         hour, minute = raw.split(":")
         return max(0, min(23, int(hour))), max(0, min(59, int(minute)))
     except ValueError:
-        log.warning("Ungültige Uhrzeit %r im Zeitplan, benutze 09:00", raw)
+        log.warning(_("Invalid time %r in the schedule, using 09:00"), raw)
         return 9, 0
 
 
@@ -622,7 +650,7 @@ def run_watch(query: str | None) -> int:
     """
     cfg = load_config()
     interval = max(1, cfg["schedule"].getint("check_every")) * 60
-    log.info("Wach-Modus gestartet, Prüfung alle %d Minuten", interval // 60)
+    log.info(_("Watch mode started, checking every %d minutes"), interval // 60)
 
     while True:
         cfg = load_config()              # Einstellungen können sich ändern
@@ -630,9 +658,9 @@ def run_watch(query: str | None) -> int:
             if is_due(cfg):
                 run_update(cfg, query)
             else:
-                log.debug("Nichts zu tun")
+                log.debug("Nothing to do")
         except Exception as err:
-            log.error("Lauf fehlgeschlagen: %s", err)
+            log.error(_("Run failed: %s"), err)
             log.debug("Details:", exc_info=True)
         time.sleep(interval)
 
@@ -662,8 +690,8 @@ def run_update(cfg: configparser.ConfigParser, query_override: str | None) -> in
             photo = fetch_from_unsplash(cfg, access_key, query, width, height)
         except urllib.error.HTTPError as err:
             if err.code in (401, 403):
-                log.error("Unsplash lehnt den Access Key ab (HTTP %d) -- "
-                          "weiter mit Lorem Picsum", err.code)
+                log.error(_("Unsplash rejected the access key (HTTP %d) -- "
+                            "falling back to Lorem Picsum"), err.code)
                 photo = fetch_from_picsum(width, height)
             else:
                 raise
@@ -687,34 +715,53 @@ def run_update(cfg: configparser.ConfigParser, query_override: str | None) -> in
 
     sync_autostart(cfg)
 
-    log.info("Fertig -- Foto von %s (%s)", photo.author, photo.page_url or photo.source)
+    log.info(_("Done -- photo by %s (%s)"), photo.author, photo.page_url or photo.source)
     return 0
 
 
 def show_status(cfg: configparser.ConfigParser) -> int:
     ensure_session_bus()
-    print(f"Konfiguration : {CONFIG_FILE}")
-    print(f"Logdatei      : {LOG_FILE}")
-    print(f"Bilderordner  : {expand_path(cfg['wallpaper']['directory'])}")
+    rows: list[tuple[str, str]] = []
+
+    rows.append((_("Configuration"), str(CONFIG_FILE)))
+    rows.append((_("Log file"), str(LOG_FILE)))
+    rows.append((_("Image folder"), str(expand_path(cfg["wallpaper"]["directory"]))))
+
     key = unquote(cfg["unsplash"]["access_key"])
-    print(f"Unsplash-Key  : {'gesetzt (' + key[:6] + '...)' if key else 'nicht gesetzt -> Lorem Picsum'}")
+    rows.append((_("Unsplash key"),
+                 _("set ({prefix}...)").format(prefix=key[:6]) if key
+                 else _("not set -> Lorem Picsum")))
 
     try:
-        print(f"Aktuell aktiv : {gsettings('get', 'org.gnome.desktop.background', 'picture-uri')}")
+        rows.append((_("Currently active"),
+                     gsettings("get", "org.gnome.desktop.background", "picture-uri")))
     except RuntimeError as err:
-        print(f"Aktuell aktiv : nicht lesbar ({err})")
+        rows.append((_("Currently active"),
+                     _("not readable ({error})").format(error=err)))
 
     if CURRENT_JSON.exists():
         current = json.loads(CURRENT_JSON.read_text())
-        print(f"Zuletzt       : {current.get('set_at')} -- Foto von {current.get('author')}")
+        rows.append((_("Last change"),
+                     _("{when} -- photo by {author}").format(
+                         when=current.get("set_at"), author=current.get("author"))))
         if current.get("page_url"):
-            print(f"Quelle        : {current['page_url']}")
+            rows.append((_("Source"), current["page_url"]))
 
-    if os.environ.get("SNAP"):
+    in_snap = bool(os.environ.get("SNAP"))
+    if in_snap:
         hour, minute = scheduled_time(cfg)
-        aktiv = "an" if cfg["schedule"].getboolean("enabled") else "aus"
-        print(f"Zeitplan      : {aktiv}, täglich um {hour:02d}:{minute:02d}")
-        print(f"Jetzt fällig  : {'ja' if is_due(cfg) else 'nein'}")
+        state = _("on") if cfg["schedule"].getboolean("enabled") else _("off")
+        rows.append((_("Schedule"),
+                     _("{state}, daily at {time}").format(
+                         state=state, time=f"{hour:02d}:{minute:02d}")))
+        rows.append((_("Due now"), _("yes") if is_due(cfg) else _("no")))
+
+    # Breite aus den übersetzten Beschriftungen, sonst verrutscht die Spalte
+    width = max(len(label) for label, _value in rows)
+    for label, value in rows:
+        print(f"{label:<{width}} : {value}")
+
+    if in_snap:
         return 0
 
     try:
@@ -723,11 +770,11 @@ def show_status(cfg: configparser.ConfigParser) -> int:
             capture_output=True, text=True, timeout=20,
         )
     except (OSError, subprocess.SubprocessError) as err:
-        log.debug("systemctl nicht verfügbar: %s", err)
+        log.debug("systemctl unavailable: %s", err)
         return 0
 
     if result.returncode == 0 and result.stdout.strip():
-        print("\nTimer:")
+        print("\n" + _("Timer:"))
         print(result.stdout.rstrip())
     return 0
 
@@ -735,19 +782,20 @@ def show_status(cfg: configparser.ConfigParser) -> int:
 def main() -> int:
     parser = argparse.ArgumentParser(
         prog=APP,
-        description="Lädt täglich ein Bild von Unsplash und setzt es als GNOME-Hintergrund.",
+        description=_("Downloads a photo from Unsplash once a day and sets it as the "
+                    "GNOME wallpaper."),
     )
     parser.add_argument("--status", action="store_true",
-                        help="Aktuellen Zustand und Timer anzeigen")
-    parser.add_argument("--query", metavar="BEGRIFF",
-                        help="Suchbegriff nur für diesen Lauf")
+                        help=_("Show current state and timer"))
+    parser.add_argument("--query", metavar=_("TERM"),
+                        help=_("Search term for this run only"))
     parser.add_argument("--config", action="store_true",
-                        help="Pfad der Konfigurationsdatei ausgeben")
+                        help=_("Print the path of the configuration file"))
     parser.add_argument("--if-due", action="store_true",
-                        help="Nur laufen, wenn heute noch kein Bild geholt wurde")
+                        help=_("Only run if no image has been fetched today"))
     parser.add_argument("--watch", action="store_true",
-                        help="Im Hintergrund laufen und täglich zur eingestellten Zeit wechseln")
-    parser.add_argument("-v", "--verbose", action="store_true", help="Debug-Ausgaben")
+                        help=_("Run in the background and change daily at the configured time"))
+    parser.add_argument("-v", "--verbose", action="store_true", help=_("Debug output"))
     args = parser.parse_args()
 
     setup_logging(args.verbose)
@@ -763,11 +811,11 @@ def main() -> int:
 
     try:
         if args.if_due and not is_due(cfg):
-            log.info("Heute schon erledigt oder Uhrzeit noch nicht erreicht")
+            log.info(_("Already done today, or the scheduled time has not been reached"))
             return 0
         return run_update(cfg, args.query)
     except Exception as err:
-        log.error("Abbruch: %s", err)
+        log.error(_("Aborted: %s"), err)
         log.debug("Details:", exc_info=True)
         return 1
 

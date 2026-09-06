@@ -9,6 +9,7 @@ systemctl --user disable --now "$APP.timer" 2>/dev/null || true
 rm -f "$UNIT_DIR/$APP.timer" "$UNIT_DIR/$APP.service"
 systemctl --user daemon-reload
 rm -f "$HOME/.local/bin/$APP" "$HOME/.local/bin/$APP-gui"
+rm -f "$HOME"/.local/share/locale/*/LC_MESSAGES/daily-wallpaper.mo
 rm -f "$HOME/.local/share/applications/de.zurek.UnsplashWallpaper.desktop"
 rm -f "$HOME/.local/share/icons/hicolor/scalable/apps/de.zurek.UnsplashWallpaper.svg"
 rm -f "$HOME/.local/share/icons/hicolor/symbolic/apps/de.zurek.UnsplashWallpaper-symbolic.svg"

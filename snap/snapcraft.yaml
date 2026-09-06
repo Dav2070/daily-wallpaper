@@ -1,25 +1,26 @@
 name: daily-wallpaper
 base: core24
-version: '1.0'
-summary: Täglich ein neues Hintergrundbild von Unsplash
+version: '1.1'
+summary: A new Unsplash wallpaper every day
 description: |
-  Daily Wallpaper holt einmal am Tag ein Foto von Unsplash und setzt es als
-  GNOME-Hintergrundbild.
+  Daily Wallpaper fetches a photo from Unsplash once a day and sets it as your
+  GNOME wallpaper.
 
-  * Suchbegriffe oder Collections bestimmen, was für Bilder kommen
-  * Bilder werden passend zur Monitorauflösung geladen
-  * Verlauf der letzten Bilder, ein Klick setzt eines davon wieder
-  * Uhrzeit des täglichen Wechsels frei einstellbar
-  * Alte Bilder werden automatisch aufgeräumt
+  * Search terms or collections decide what kind of photos you get
+  * Images are downloaded to match your monitor resolution
+  * History of recent wallpapers, one click puts an old one back
+  * The time of the daily change is configurable
+  * Old images are cleaned up automatically
+  * Available in English and German
 
-  Nach der Installation die App einmal öffnen: dabei wird der tägliche
-  Wechsel eingerichtet und sofort das erste Bild geladen.
+  Open the app once after installing: that sets up the daily change and
+  fetches the first image right away.
 
-  Für die Unsplash-Suche wird ein kostenloser Access Key von
-  https://unsplash.com/oauth/applications benötigt, der in den Einstellungen
-  eingetragen wird. Ohne Key kommen die Bilder von Lorem Picsum.
+  Unsplash search needs a free access key from
+  https://unsplash.com/oauth/applications, entered in the settings. Without a
+  key, images come from Lorem Picsum instead.
 
-  Nicht mit Unsplash Inc. verbunden.
+  Not affiliated with Unsplash Inc.
 
 title: Daily Wallpaper
 license: MIT
@@ -43,14 +44,6 @@ environment:
   PYTHONPATH: $SNAP_DESKTOP_RUNTIME/usr/lib/python3/dist-packages
   GI_TYPELIB_PATH: $SNAP_DESKTOP_RUNTIME/usr/lib/x86_64-linux-gnu/girepository-1.0:$SNAP_DESKTOP_RUNTIME/usr/lib/aarch64-linux-gnu/girepository-1.0
 
-# Ohne diesen Slot verbietet AppArmor der Anwendung, ihren eigenen DBus-Namen
-# zu besitzen -- GTK verliert dann die Einzelinstanz-Logik.
-slots:
-  dbus-daily-wallpaper:
-    interface: dbus
-    bus: session
-    name: de.zurek.UnsplashWallpaper
-
 parts:
   daily-wallpaper:
     plugin: dump
@@ -60,6 +53,13 @@ parts:
       unsplash-wallpaper-gui.py: bin/daily-wallpaper-gui
       icons/de.zurek.UnsplashWallpaper.svg: usr/share/icons/hicolor/scalable/apps/daily-wallpaper.svg
       icons/de.zurek.UnsplashWallpaper-symbolic.svg: usr/share/icons/hicolor/symbolic/apps/daily-wallpaper-symbolic.svg
+    # Übersetzungen kompilieren. tools/i18n.py kommt ohne gettext-Paket aus,
+    # deshalb braucht der Bau keine zusätzlichen build-packages.
+    override-build: |
+      craftctl default
+      python3 "${CRAFT_PART_SRC}/tools/i18n.py" compile \
+        --po-dir "${CRAFT_PART_SRC}/po" \
+        --output "${CRAFT_PART_INSTALL}/usr/share/locale"
     stage:
       - bin
       - usr

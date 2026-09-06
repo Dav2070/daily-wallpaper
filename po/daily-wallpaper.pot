@@ -1,0 +1,559 @@
+msgid ""
+msgstr ""
+"Project-Id-Version: daily-wallpaper\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+
+#: unsplash-wallpaper.py:818
+msgid "Aborted: %s"
+msgstr ""
+
+#: unsplash-wallpaper-gui.py:376
+msgid "About"
+msgstr ""
+
+#: unsplash-wallpaper-gui.py:485
+msgid "Access key"
+msgstr ""
+
+#: unsplash-wallpaper.py:814
+msgid "Already done today, or the scheduled time has not been reached"
+msgstr ""
+
+#: unsplash-wallpaper-gui.py:79
+msgid "April"
+msgstr ""
+
+#: unsplash-wallpaper.py:222
+msgid "Attempt %d/%d failed (%s), retrying in %.0fs"
+msgstr ""
+
+#: unsplash-wallpaper-gui.py:80
+msgid "August"
+msgstr ""
+
+#: unsplash-wallpaper-gui.py:345
+msgid "Centered"
+msgstr ""
+
+#: unsplash-wallpaper-gui.py:549
+msgid "Change automatically every day"
+msgstr ""
+
+#: unsplash-wallpaper-gui.py:647
+msgid "Click to set"
+msgstr ""
+
+#: unsplash-wallpaper-gui.py:608
+msgid "Click “New image”."
+msgstr ""
+
+#: unsplash-wallpaper-gui.py:495
+msgid "Collection IDs (take precedence)"
+msgstr ""
+
+#: unsplash-wallpaper.py:726
+msgid "Configuration"
+msgstr ""
+
+#: unsplash-wallpaper.py:591
+msgid "Could not change autostart: %s"
+msgstr ""
+
+#: unsplash-wallpaper.py:134
+msgid "Created default configuration: %s"
+msgstr ""
+
+#: unsplash-wallpaper-gui.py:363
+msgid "Current"
+msgstr ""
+
+#: unsplash-wallpaper.py:736 unsplash-wallpaper.py:739
+msgid "Currently active"
+msgstr ""
+
+#: unsplash-wallpaper-gui.py:352 unsplash-wallpaper-gui.py:748
+msgid "Daily Wallpaper"
+msgstr ""
+
+#: unsplash-wallpaper.py:798
+msgid "Debug output"
+msgstr ""
+
+#: unsplash-wallpaper-gui.py:81
+msgid "December"
+msgstr ""
+
+#: unsplash-wallpaper.py:391
+msgid "Deleted during cleanup: %s"
+msgstr ""
+
+#: unsplash-wallpaper.py:718
+msgid "Done -- photo by %s (%s)"
+msgstr ""
+
+#: unsplash-wallpaper-gui.py:646
+msgid "Downloaded {when}"
+msgstr ""
+
+#: unsplash-wallpaper.py:785
+msgid "Downloads a photo from Unsplash once a day and sets it as the GNOME wallpaper."
+msgstr ""
+
+#: unsplash-wallpaper.py:757
+msgid "Due now"
+msgstr ""
+
+#: unsplash-wallpaper-gui.py:703 unsplash-wallpaper-gui.py:723
+msgid "Failed: {error}"
+msgstr ""
+
+#: unsplash-wallpaper-gui.py:79
+msgid "February"
+msgstr ""
+
+#: unsplash-wallpaper-gui.py:465
+msgid "Fetch your first wallpaper on the “Current” page."
+msgstr ""
+
+#: unsplash-wallpaper-gui.py:231
+msgid "First run pending"
+msgstr ""
+
+#: unsplash-wallpaper-gui.py:75
+msgid "Friday"
+msgstr ""
+
+#: unsplash-wallpaper-gui.py:541
+msgid "Handled by a background service that starts with your session and catches up a missed day."
+msgstr ""
+
+#: unsplash-wallpaper-gui.py:365
+msgid "History"
+msgstr ""
+
+#: unsplash-wallpaper-gui.py:560
+msgid "Hour"
+msgstr ""
+
+#: unsplash-wallpaper-gui.py:528 unsplash-wallpaper.py:728
+msgid "Image folder"
+msgstr ""
+
+#: unsplash-wallpaper-gui.py:513
+msgid "Images to keep"
+msgstr ""
+
+#: unsplash-wallpaper.py:615
+msgid "Invalid time %r in the schedule, using 09:00"
+msgstr ""
+
+#: unsplash-wallpaper-gui.py:79
+msgid "January"
+msgstr ""
+
+#: unsplash-wallpaper-gui.py:80
+msgid "July"
+msgstr ""
+
+#: unsplash-wallpaper-gui.py:80
+msgid "June"
+msgstr ""
+
+#: unsplash-wallpaper-gui.py:342
+msgid "Landscape"
+msgstr ""
+
+#: unsplash-wallpaper.py:744
+msgid "Last change"
+msgstr ""
+
+#: unsplash-wallpaper.py:727
+msgid "Log file"
+msgstr ""
+
+#: unsplash-wallpaper-gui.py:79
+msgid "March"
+msgstr ""
+
+#: unsplash-wallpaper-gui.py:79
+msgid "May"
+msgstr ""
+
+#: unsplash-wallpaper-gui.py:567
+msgid "Minute"
+msgstr ""
+
+#: unsplash-wallpaper-gui.py:74
+msgid "Monday"
+msgstr ""
+
+#: unsplash-wallpaper-gui.py:521
+msgid "Naming the photographer"
+msgstr ""
+
+#: unsplash-wallpaper-gui.py:426
+msgid "New image"
+msgstr ""
+
+#: unsplash-wallpaper.py:535
+msgid "New wallpaper"
+msgstr ""
+
+#: unsplash-wallpaper-gui.py:707
+msgid "New wallpaper set"
+msgstr ""
+
+#: unsplash-wallpaper-gui.py:297
+msgid "Next run unknown"
+msgstr ""
+
+#: unsplash-wallpaper-gui.py:239 unsplash-wallpaper-gui.py:296
+msgid "Next run {when}"
+msgstr ""
+
+#: unsplash-wallpaper.py:297
+msgid "No Unsplash key configured -- using Lorem Picsum"
+msgstr ""
+
+#: unsplash-wallpaper-gui.py:464
+msgid "No images yet"
+msgstr ""
+
+#: unsplash-wallpaper-gui.py:744
+msgid "No log available yet"
+msgstr ""
+
+#: unsplash-wallpaper-gui.py:607
+msgid "No wallpaper set yet"
+msgstr ""
+
+#: unsplash-wallpaper-gui.py:81
+msgid "November"
+msgstr ""
+
+#: unsplash-wallpaper-gui.py:80
+msgid "October"
+msgstr ""
+
+#: unsplash-wallpaper-gui.py:514
+msgid "Older ones are deleted. 0 = keep all"
+msgstr ""
+
+#: unsplash-wallpaper.py:795
+msgid "Only run if no image has been fetched today"
+msgstr ""
+
+#: unsplash-wallpaper-gui.py:374
+msgid "Open image folder"
+msgstr ""
+
+#: unsplash-wallpaper-gui.py:500
+msgid "Orientation"
+msgstr ""
+
+#: unsplash-wallpaper-gui.py:615 unsplash-wallpaper-gui.py:645 unsplash-wallpaper.py:536
+msgid "Photo by {author}"
+msgstr ""
+
+#: unsplash-wallpaper-gui.py:342
+msgid "Portrait"
+msgstr ""
+
+#: unsplash-wallpaper.py:793
+msgid "Print the path of the configuration file"
+msgstr ""
+
+#: unsplash-wallpaper.py:274
+msgid "Querying the Unsplash API (query=%r, orientation=%s)"
+msgstr ""
+
+#: unsplash-wallpaper-gui.py:544
+msgid "Run by a systemd timer, and caught up if the computer was switched off at that time."
+msgstr ""
+
+#: unsplash-wallpaper-gui.py:555
+msgid "Run by the background service of the snap"
+msgstr ""
+
+#: unsplash-wallpaper.py:663
+msgid "Run failed: %s"
+msgstr ""
+
+#: unsplash-wallpaper.py:797
+msgid "Run in the background and change daily at the configured time"
+msgstr ""
+
+#: unsplash-wallpaper-gui.py:75
+msgid "Saturday"
+msgstr ""
+
+#: unsplash-wallpaper.py:358
+msgid "Saved: %s (%.1f MB)"
+msgstr ""
+
+#: unsplash-wallpaper-gui.py:344
+msgid "Scaled"
+msgstr ""
+
+#: unsplash-wallpaper-gui.py:508
+msgid "Scaling"
+msgstr ""
+
+#: unsplash-wallpaper-gui.py:546 unsplash-wallpaper.py:754
+msgid "Schedule"
+msgstr ""
+
+#: unsplash-wallpaper-gui.py:729
+msgid "Schedule disabled"
+msgstr ""
+
+#: unsplash-wallpaper-gui.py:728
+msgid "Schedule enabled"
+msgstr ""
+
+#: unsplash-wallpaper-gui.py:227 unsplash-wallpaper-gui.py:293
+msgid "Schedule is off"
+msgstr ""
+
+#: unsplash-wallpaper-gui.py:291
+msgid "Schedule not installed"
+msgstr ""
+
+#: unsplash-wallpaper-gui.py:421
+msgid "Search term for this run (empty = use settings)"
+msgstr ""
+
+#: unsplash-wallpaper.py:791
+msgid "Search term for this run only"
+msgstr ""
+
+#: unsplash-wallpaper-gui.py:490
+msgid "Search terms (comma separated)"
+msgstr ""
+
+#: unsplash-wallpaper-gui.py:80
+msgid "September"
+msgstr ""
+
+#: unsplash-wallpaper-gui.py:621
+msgid "Set {when}"
+msgstr ""
+
+#: unsplash-wallpaper-gui.py:721
+msgid "Set: {name}"
+msgstr ""
+
+#: unsplash-wallpaper-gui.py:752
+msgid "Sets a photo from Unsplash as the wallpaper every day."
+msgstr ""
+
+#: unsplash-wallpaper-gui.py:367
+msgid "Settings"
+msgstr ""
+
+#: unsplash-wallpaper.py:789
+msgid "Show current state and timer"
+msgstr ""
+
+#: unsplash-wallpaper-gui.py:375
+msgid "Show log"
+msgstr ""
+
+#: unsplash-wallpaper-gui.py:520
+msgid "Show notification"
+msgstr ""
+
+#: unsplash-wallpaper.py:748
+msgid "Source"
+msgstr ""
+
+#: unsplash-wallpaper-gui.py:346
+msgid "Spanned across monitors"
+msgstr ""
+
+#: unsplash-wallpaper-gui.py:343
+msgid "Square"
+msgstr ""
+
+#: unsplash-wallpaper-gui.py:345
+msgid "Stretched"
+msgstr ""
+
+#: unsplash-wallpaper-gui.py:75
+msgid "Sunday"
+msgstr ""
+
+#: unsplash-wallpaper.py:790
+msgid "TERM"
+msgstr ""
+
+#: unsplash-wallpaper.py:352
+msgid "The downloaded file is not an image"
+msgstr ""
+
+#: unsplash-wallpaper.py:355
+msgid "The downloaded file is suspiciously small"
+msgstr ""
+
+#: unsplash-wallpaper-gui.py:74
+msgid "Thursday"
+msgstr ""
+
+#: unsplash-wallpaper-gui.py:553
+msgid "Timer not installed -- run ./install.sh"
+msgstr ""
+
+#: unsplash-wallpaper.py:777
+msgid "Timer:"
+msgstr ""
+
+#: unsplash-wallpaper-gui.py:74
+msgid "Tuesday"
+msgstr ""
+
+#: unsplash-wallpaper-gui.py:616 unsplash-wallpaper.py:287
+msgid "Unknown"
+msgstr ""
+
+#: unsplash-wallpaper-gui.py:481
+msgid "Unsplash"
+msgstr ""
+
+#: unsplash-wallpaper.py:731
+msgid "Unsplash key"
+msgstr ""
+
+#: unsplash-wallpaper.py:693
+msgid "Unsplash rejected the access key (HTTP %d) -- falling back to Lorem Picsum"
+msgstr ""
+
+#: unsplash-wallpaper-gui.py:506
+msgid "Wallpaper"
+msgstr ""
+
+#: unsplash-wallpaper.py:500
+msgid "Wallpaper set: %s"
+msgstr ""
+
+#: unsplash-wallpaper.py:653
+msgid "Watch mode started, checking every %d minutes"
+msgstr ""
+
+#: unsplash-wallpaper-gui.py:74
+msgid "Wednesday"
+msgstr ""
+
+#: unsplash-wallpaper-gui.py:482
+msgid "Without an access key, Lorem Picsum is used as a fallback source."
+msgstr ""
+
+#: unsplash-wallpaper-gui.py:344
+msgid "Zoom (fills the screen)"
+msgstr ""
+
+#: unsplash-wallpaper-gui.py:121
+msgid "just now"
+msgstr ""
+
+#: unsplash-wallpaper-gui.py:103
+msgid "last {weekday}"
+msgstr ""
+
+#: unsplash-wallpaper-gui.py:241 unsplash-wallpaper-gui.py:301
+msgid "last {when}"
+msgstr ""
+
+#: unsplash-wallpaper.py:757
+msgid "no"
+msgstr ""
+
+#: unsplash-wallpaper.py:740
+msgid "not readable ({error})"
+msgstr ""
+
+#: unsplash-wallpaper.py:733
+msgid "not set -> Lorem Picsum"
+msgstr ""
+
+#: unsplash-wallpaper.py:753
+msgid "off"
+msgstr ""
+
+#: unsplash-wallpaper.py:753
+msgid "on"
+msgstr ""
+
+#: unsplash-wallpaper-gui.py:105
+msgid "on {day} {month}"
+msgstr ""
+
+#: unsplash-wallpaper-gui.py:106
+msgid "on {day} {month} {year}"
+msgstr ""
+
+#: unsplash-wallpaper-gui.py:101
+msgid "on {weekday}"
+msgstr ""
+
+#: unsplash-wallpaper.py:732
+msgid "set ({prefix}...)"
+msgstr ""
+
+#: unsplash-wallpaper-gui.py:148 unsplash-wallpaper-gui.py:99
+msgid "the day before yesterday"
+msgstr ""
+
+#: unsplash-wallpaper-gui.py:144 unsplash-wallpaper-gui.py:93
+msgid "today"
+msgstr ""
+
+#: unsplash-wallpaper-gui.py:97
+msgid "tomorrow"
+msgstr ""
+
+#: unsplash-wallpaper.py:757
+msgid "yes"
+msgstr ""
+
+#: unsplash-wallpaper-gui.py:146 unsplash-wallpaper-gui.py:95
+msgid "yesterday"
+msgstr ""
+
+#: unsplash-wallpaper-gui.py:130
+msgid "{count} hour ago"
+msgid_plural "{count} hours ago"
+msgstr[0] ""
+msgstr[1] ""
+
+#: unsplash-wallpaper-gui.py:125
+msgid "{count} minute ago"
+msgid_plural "{count} minutes ago"
+msgstr[0] ""
+msgstr[1] ""
+
+#: unsplash-wallpaper-gui.py:112
+msgid "{day} at {time}"
+msgstr ""
+
+#: unsplash-wallpaper-gui.py:152
+msgid "{day} {month}"
+msgstr ""
+
+#: unsplash-wallpaper-gui.py:154
+msgid "{day} {month} {year}"
+msgstr ""
+
+#: unsplash-wallpaper-gui.py:159
+msgid "{day}, {time}"
+msgstr ""
+
+#: unsplash-wallpaper.py:755
+msgid "{state}, daily at {time}"
+msgstr ""
+
+#: unsplash-wallpaper.py:745
+msgid "{when} -- photo by {author}"
+msgstr ""

@@ -63,6 +63,10 @@ else
   echo "    Nachinstallieren mit: sudo apt install python3-gi gir1.2-gtk-4.0 gir1.2-adw-1"
 fi
 
+echo "==> Übersetzungen kompilieren"
+python3 "$SRC_DIR/tools/i18n.py" compile \
+  --po-dir "$SRC_DIR/po" --output "$HOME/.local/share/locale"
+
 echo "==> systemd-Units nach $UNIT_DIR schreiben"
 mkdir -p "$UNIT_DIR"
 

@@ -6,3 +6,6 @@ parts/
 stage/
 prime/
 *.snap
+
+# Aus po/ erzeugt
+locale/
