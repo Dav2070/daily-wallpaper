@@ -8,551 +8,574 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
 
-#: unsplash-wallpaper.py:818
+#: daily-wallpaper.py:822
 msgid "Aborted: %s"
 msgstr "Abbruch: %s"
 
-#: unsplash-wallpaper-gui.py:357
+#: daily-wallpaper-gui.py:387
 msgid "About"
 msgstr "Über"
 
-#: unsplash-wallpaper-gui.py:466
+#: daily-wallpaper-gui.py:496
 msgid "Access key"
 msgstr "Access Key"
 
-#: unsplash-wallpaper.py:814
+#: daily-wallpaper.py:818
 msgid "Already done today, or the scheduled time has not been reached"
 msgstr "Heute schon erledigt oder Uhrzeit noch nicht erreicht"
 
-#: unsplash-wallpaper-gui.py:79
+#: daily-wallpaper-gui.py:90
 msgid "April"
 msgstr "April"
 
-#: unsplash-wallpaper.py:222
+#: daily-wallpaper.py:226
 msgid "Attempt %d/%d failed (%s), retrying in %.0fs"
 msgstr "Versuch %d/%d fehlgeschlagen (%s), warte %.0fs"
 
-#: unsplash-wallpaper-gui.py:80
+#: daily-wallpaper-gui.py:91
 msgid "August"
 msgstr "August"
 
-#: unsplash-wallpaper-gui.py:326
+#: daily-wallpaper-gui.py:356
 msgid "Centered"
 msgstr "Zentriert"
 
-#: unsplash-wallpaper-gui.py:525
+#: daily-wallpaper-gui.py:560
 msgid "Change automatically every day"
 msgstr "Täglich automatisch wechseln"
 
-#: unsplash-wallpaper-gui.py:623
+#: daily-wallpaper-gui.py:658
 msgid "Click to set"
 msgstr "Klicken zum Setzen"
 
-#: unsplash-wallpaper-gui.py:584
+#: daily-wallpaper-gui.py:619
 msgid "Click “New image”."
 msgstr "Klicke auf »Neues Bild«."
 
-#: unsplash-wallpaper-gui.py:476
+#: daily-wallpaper-gui.py:506
 msgid "Collection IDs (take precedence)"
 msgstr "Collection-IDs (haben Vorrang)"
 
-#: unsplash-wallpaper.py:726
+#: daily-wallpaper.py:730
 msgid "Configuration"
 msgstr "Konfiguration"
 
-#: unsplash-wallpaper.py:591
+#: daily-wallpaper.py:595
 msgid "Could not change autostart: %s"
 msgstr "Autostart nicht änderbar: %s"
 
-#: unsplash-wallpaper.py:134
+#: daily-wallpaper.py:138
 msgid "Created default configuration: %s"
 msgstr "Standardkonfiguration angelegt: %s"
 
-#: unsplash-wallpaper-gui.py:344
+#: daily-wallpaper-gui.py:374
 msgid "Current"
 msgstr "Aktuell"
 
-#: unsplash-wallpaper.py:736 unsplash-wallpaper.py:739
+#: daily-wallpaper.py:740 daily-wallpaper.py:743
 msgid "Currently active"
 msgstr "Aktuell aktiv"
 
-#: unsplash-wallpaper-gui.py:333 unsplash-wallpaper-gui.py:724
+#: daily-wallpaper-gui.py:363 daily-wallpaper-gui.py:781
 msgid "Daily Wallpaper"
 msgstr "Daily Wallpaper"
 
-#: unsplash-wallpaper.py:798
+#: daily-wallpaper.py:802
 msgid "Debug output"
 msgstr "Debug-Ausgaben"
 
-#: unsplash-wallpaper-gui.py:81
+#: daily-wallpaper-gui.py:92
 msgid "December"
 msgstr "Dezember"
 
-#: unsplash-wallpaper.py:391
+#: daily-wallpaper.py:395
 msgid "Deleted during cleanup: %s"
 msgstr "Gelöscht (Aufräumen): %s"
 
-#: unsplash-wallpaper.py:718
+#: daily-wallpaper-gui.py:793
+msgid "Donate"
+msgstr "Spenden"
+
+#: daily-wallpaper.py:722
 msgid "Done -- photo by %s (%s)"
 msgstr "Fertig -- Foto von %s (%s)"
 
-#: unsplash-wallpaper-gui.py:622
+#: daily-wallpaper-gui.py:657
 msgid "Downloaded {when}"
 msgstr "Geladen {when}"
 
-#: unsplash-wallpaper.py:785
+#: daily-wallpaper.py:789
 msgid "Downloads a photo from Unsplash once a day and sets it as the GNOME wallpaper."
 msgstr "Lädt täglich ein Bild von Unsplash und setzt es als GNOME-Hintergrund."
 
-#: unsplash-wallpaper.py:757
+#: daily-wallpaper.py:761
 msgid "Due now"
 msgstr "Jetzt fällig"
 
-#: unsplash-wallpaper-gui.py:679 unsplash-wallpaper-gui.py:699
+#: daily-wallpaper-gui.py:714 daily-wallpaper-gui.py:734
 msgid "Failed: {error}"
 msgstr "Fehlgeschlagen: {error}"
 
-#: unsplash-wallpaper-gui.py:79
+#: daily-wallpaper-gui.py:90
 msgid "February"
 msgstr "Februar"
 
-#: unsplash-wallpaper-gui.py:446
+#: daily-wallpaper-gui.py:476
 msgid "Fetch your first wallpaper on the “Current” page."
 msgstr "Hole dir auf der Seite »Aktuell« das erste Wallpaper."
 
-#: unsplash-wallpaper-gui.py:212
+#: daily-wallpaper-gui.py:242
 msgid "First run pending"
 msgstr "Erster Lauf steht aus"
 
-#: unsplash-wallpaper-gui.py:75
+#: daily-wallpaper-gui.py:86
 msgid "Friday"
 msgstr "Freitag"
 
-#: unsplash-wallpaper-gui.py:346
+#: daily-wallpaper-gui.py:552
+msgid "Handled by a background service that starts with your session and catches up a missed day."
+msgstr "Wird von einem Hintergrunddienst erledigt, der mit der Sitzung startet und einen verpassten Tag nachholt."
+
+#: daily-wallpaper-gui.py:376
 msgid "History"
 msgstr "Verlauf"
 
-#: unsplash-wallpaper-gui.py:536
+#: daily-wallpaper-gui.py:571
 msgid "Hour"
 msgstr "Stunde"
 
-#: unsplash-wallpaper-gui.py:509 unsplash-wallpaper.py:728
+#: daily-wallpaper-gui.py:539 daily-wallpaper.py:732
 msgid "Image folder"
 msgstr "Bilderordner"
 
-#: unsplash-wallpaper-gui.py:494
+#: daily-wallpaper-gui.py:524
 msgid "Images to keep"
 msgstr "Bilder behalten"
 
-#: unsplash-wallpaper.py:615
+#: daily-wallpaper.py:619
 msgid "Invalid time %r in the schedule, using 09:00"
 msgstr "Ungültige Uhrzeit %r im Zeitplan, benutze 09:00"
 
-#: unsplash-wallpaper-gui.py:79
+#: daily-wallpaper-gui.py:90
 msgid "January"
 msgstr "Januar"
 
-#: unsplash-wallpaper-gui.py:80
+#: daily-wallpaper-gui.py:91
 msgid "July"
 msgstr "Juli"
 
-#: unsplash-wallpaper-gui.py:80
+#: daily-wallpaper-gui.py:91
 msgid "June"
 msgstr "Juni"
 
-#: unsplash-wallpaper-gui.py:323
+#: daily-wallpaper-gui.py:353
 msgid "Landscape"
 msgstr "Querformat"
 
-#: unsplash-wallpaper.py:744
+#: daily-wallpaper.py:748
 msgid "Last change"
 msgstr "Zuletzt"
 
-#: unsplash-wallpaper.py:727
+#: daily-wallpaper.py:731
 msgid "Log file"
 msgstr "Logdatei"
 
-#: unsplash-wallpaper-gui.py:79
+#: daily-wallpaper-gui.py:90
 msgid "March"
 msgstr "März"
 
-#: unsplash-wallpaper-gui.py:79
+#: daily-wallpaper-gui.py:90
 msgid "May"
 msgstr "Mai"
 
-#: unsplash-wallpaper-gui.py:543
+#: daily-wallpaper-gui.py:578
 msgid "Minute"
 msgstr "Minute"
 
-#: unsplash-wallpaper-gui.py:74
+#: daily-wallpaper-gui.py:85
 msgid "Monday"
 msgstr "Montag"
 
-#: unsplash-wallpaper-gui.py:502
+#: daily-wallpaper-gui.py:532
 msgid "Naming the photographer"
 msgstr "Mit Namen des Fotografen"
 
-#: unsplash-wallpaper-gui.py:407
+#: daily-wallpaper-gui.py:437
 msgid "New image"
 msgstr "Neues Bild"
 
-#: unsplash-wallpaper.py:535
+#: daily-wallpaper.py:539
 msgid "New wallpaper"
 msgstr "Neues Hintergrundbild"
 
-#: unsplash-wallpaper-gui.py:683
+#: daily-wallpaper-gui.py:718
 msgid "New wallpaper set"
 msgstr "Neues Hintergrundbild gesetzt"
 
-#: unsplash-wallpaper-gui.py:278
+#: daily-wallpaper-gui.py:308
 msgid "Next run unknown"
 msgstr "Nächster Lauf unbekannt"
 
-#: unsplash-wallpaper-gui.py:220 unsplash-wallpaper-gui.py:277
+#: daily-wallpaper-gui.py:250 daily-wallpaper-gui.py:307
 msgid "Next run {when}"
 msgstr "Nächster Lauf {when}"
 
-#: unsplash-wallpaper.py:297
+#: daily-wallpaper.py:301
 msgid "No Unsplash key configured -- using Lorem Picsum"
 msgstr "Kein Unsplash-Key konfiguriert -- benutze Lorem Picsum"
 
-#: unsplash-wallpaper-gui.py:445
+#: daily-wallpaper-gui.py:475
 msgid "No images yet"
 msgstr "Noch keine Bilder"
 
-#: unsplash-wallpaper-gui.py:720
+#: daily-wallpaper-gui.py:755
 msgid "No log available yet"
 msgstr "Noch kein Protokoll vorhanden"
 
-#: unsplash-wallpaper-gui.py:583
+#: daily-wallpaper-gui.py:618
 msgid "No wallpaper set yet"
 msgstr "Noch kein Wallpaper gesetzt"
 
-#: unsplash-wallpaper-gui.py:81
+#: daily-wallpaper-gui.py:92
 msgid "November"
 msgstr "November"
 
-#: unsplash-wallpaper-gui.py:80
+#: daily-wallpaper-gui.py:91
 msgid "October"
 msgstr "Oktober"
 
-#: unsplash-wallpaper-gui.py:495
+#: daily-wallpaper-gui.py:525
 msgid "Older ones are deleted. 0 = keep all"
 msgstr "Ältere werden gelöscht. 0 = alle behalten"
 
-#: unsplash-wallpaper.py:795
+#: daily-wallpaper.py:799
 msgid "Only run if no image has been fetched today"
 msgstr "Nur laufen, wenn heute noch kein Bild geholt wurde"
 
-#: unsplash-wallpaper-gui.py:355
+#: daily-wallpaper-gui.py:385
 msgid "Open image folder"
 msgstr "Bilderordner öffnen"
 
-#: unsplash-wallpaper-gui.py:481
+#: daily-wallpaper-gui.py:511
 msgid "Orientation"
 msgstr "Ausrichtung"
 
-#: unsplash-wallpaper-gui.py:591 unsplash-wallpaper-gui.py:621 unsplash-wallpaper.py:536
+#: daily-wallpaper-gui.py:626 daily-wallpaper-gui.py:656 daily-wallpaper.py:540
 msgid "Photo by {author}"
 msgstr "Foto von {author}"
 
-#: unsplash-wallpaper-gui.py:323
+#: daily-wallpaper-gui.py:798 daily-wallpaper-gui.py:800
+msgid "Photos"
+msgstr "Fotos"
+
+#: daily-wallpaper-gui.py:801
+msgid "Photos are provided by Unsplash and Lorem Picsum and remain subject to their own licences. This application is not affiliated with Unsplash Inc."
+msgstr "Die Fotos stammen von Unsplash und Lorem Picsum und unterliegen deren eigenen Lizenzen. Diese Anwendung steht in keiner Verbindung zu Unsplash Inc."
+
+#: daily-wallpaper-gui.py:353
 msgid "Portrait"
 msgstr "Hochformat"
 
-#: unsplash-wallpaper.py:793
+#: daily-wallpaper.py:797
 msgid "Print the path of the configuration file"
 msgstr "Pfad der Konfigurationsdatei ausgeben"
 
-#: unsplash-wallpaper.py:274
+#: daily-wallpaper-gui.py:792
+msgid "Privacy policy"
+msgstr "Datenschutz"
+
+#: daily-wallpaper.py:278
 msgid "Querying the Unsplash API (query=%r, orientation=%s)"
 msgstr "Frage Unsplash-API an (query=%r, orientation=%s)"
 
-#: unsplash-wallpaper-gui.py:521
+#: daily-wallpaper-gui.py:555
 msgid "Run by a systemd timer, and caught up if the computer was switched off at that time."
 msgstr "Wird per systemd-Timer ausgeführt und nachgeholt, falls der Rechner zur Zeit aus war."
 
-#: unsplash-wallpaper-gui.py:531
+#: daily-wallpaper-gui.py:566
 msgid "Run by the background service of the snap"
 msgstr "Wird vom Hintergrunddienst des Snaps ausgeführt"
 
-#: unsplash-wallpaper.py:663
+#: daily-wallpaper.py:667
 msgid "Run failed: %s"
 msgstr "Lauf fehlgeschlagen: %s"
 
-#: unsplash-wallpaper.py:797
+#: daily-wallpaper.py:801
 msgid "Run in the background and change daily at the configured time"
 msgstr "Im Hintergrund laufen und täglich zur eingestellten Zeit wechseln"
 
-#: unsplash-wallpaper-gui.py:75
+#: daily-wallpaper-gui.py:86
 msgid "Saturday"
 msgstr "Samstag"
 
-#: unsplash-wallpaper.py:358
+#: daily-wallpaper.py:362
 msgid "Saved: %s (%.1f MB)"
 msgstr "Gespeichert: %s (%.1f MB)"
 
-#: unsplash-wallpaper-gui.py:325
+#: daily-wallpaper-gui.py:355
 msgid "Scaled"
 msgstr "Eingepasst"
 
-#: unsplash-wallpaper-gui.py:489
+#: daily-wallpaper-gui.py:519
 msgid "Scaling"
 msgstr "Skalierung"
 
-#: unsplash-wallpaper-gui.py:520 unsplash-wallpaper.py:754
+#: daily-wallpaper-gui.py:557 daily-wallpaper.py:758
 msgid "Schedule"
 msgstr "Zeitplan"
 
-#: unsplash-wallpaper-gui.py:705
+#: daily-wallpaper-gui.py:740
 msgid "Schedule disabled"
 msgstr "Zeitplan deaktiviert"
 
-#: unsplash-wallpaper-gui.py:704
+#: daily-wallpaper-gui.py:739
 msgid "Schedule enabled"
 msgstr "Zeitplan aktiviert"
 
-#: unsplash-wallpaper-gui.py:208 unsplash-wallpaper-gui.py:274
+#: daily-wallpaper-gui.py:238 daily-wallpaper-gui.py:304
 msgid "Schedule is off"
 msgstr "Zeitplan ist aus"
 
-#: unsplash-wallpaper-gui.py:272
+#: daily-wallpaper-gui.py:302
 msgid "Schedule not installed"
 msgstr "Zeitplan nicht installiert"
 
-#: unsplash-wallpaper-gui.py:402
+#: daily-wallpaper-gui.py:432
 msgid "Search term for this run (empty = use settings)"
 msgstr "Suchbegriff für diesen Lauf (leer = aus den Einstellungen)"
 
-#: unsplash-wallpaper.py:791
+#: daily-wallpaper.py:795
 msgid "Search term for this run only"
 msgstr "Suchbegriff nur für diesen Lauf"
 
-#: unsplash-wallpaper-gui.py:471
+#: daily-wallpaper-gui.py:501
 msgid "Search terms (comma separated)"
 msgstr "Suchbegriffe (kommagetrennt)"
 
-#: unsplash-wallpaper-gui.py:80
+#: daily-wallpaper-gui.py:91
 msgid "September"
 msgstr "September"
 
-#: unsplash-wallpaper-gui.py:597
+#: daily-wallpaper-gui.py:632
 msgid "Set {when}"
 msgstr "Gesetzt {when}"
 
-#: unsplash-wallpaper-gui.py:697
+#: daily-wallpaper-gui.py:732
 msgid "Set: {name}"
 msgstr "Gesetzt: {name}"
 
-#: unsplash-wallpaper-gui.py:728
+#: daily-wallpaper-gui.py:785
 msgid "Sets a photo from Unsplash as the wallpaper every day."
 msgstr "Setzt täglich ein Foto von Unsplash als Hintergrundbild."
 
-#: unsplash-wallpaper-gui.py:348
+#: daily-wallpaper-gui.py:378
 msgid "Settings"
 msgstr "Einstellungen"
 
-#: unsplash-wallpaper.py:789
+#: daily-wallpaper.py:793
 msgid "Show current state and timer"
 msgstr "Aktuellen Zustand und Timer anzeigen"
 
-#: unsplash-wallpaper-gui.py:356
+#: daily-wallpaper-gui.py:386
 msgid "Show log"
 msgstr "Protokoll anzeigen"
 
-#: unsplash-wallpaper-gui.py:501
+#: daily-wallpaper-gui.py:531
 msgid "Show notification"
 msgstr "Benachrichtigung anzeigen"
 
-#: unsplash-wallpaper.py:748
+#: daily-wallpaper.py:752
 msgid "Source"
 msgstr "Quelle"
 
-#: unsplash-wallpaper-gui.py:327
+#: daily-wallpaper-gui.py:791
+msgid "Source code"
+msgstr "Quelltext"
+
+#: daily-wallpaper-gui.py:357
 msgid "Spanned across monitors"
 msgstr "Über alle Monitore"
 
-#: unsplash-wallpaper-gui.py:324
+#: daily-wallpaper-gui.py:354
 msgid "Square"
 msgstr "Quadratisch"
 
-#: unsplash-wallpaper-gui.py:326
+#: daily-wallpaper-gui.py:356
 msgid "Stretched"
 msgstr "Gestreckt"
 
-#: unsplash-wallpaper-gui.py:75
+#: daily-wallpaper-gui.py:86
 msgid "Sunday"
 msgstr "Sonntag"
 
-#: unsplash-wallpaper.py:790
+#: daily-wallpaper.py:794
 msgid "TERM"
 msgstr "BEGRIFF"
 
-#: unsplash-wallpaper.py:352
+#: daily-wallpaper.py:356
 msgid "The downloaded file is not an image"
 msgstr "Heruntergeladene Datei ist kein Bild"
 
-#: unsplash-wallpaper.py:355
+#: daily-wallpaper.py:359
 msgid "The downloaded file is suspiciously small"
 msgstr "Heruntergeladene Datei ist verdächtig klein"
 
-#: unsplash-wallpaper-gui.py:74
+#: daily-wallpaper-gui.py:85
 msgid "Thursday"
 msgstr "Donnerstag"
 
-#: unsplash-wallpaper-gui.py:529
+#: daily-wallpaper-gui.py:564
 msgid "Timer not installed -- run ./install.sh"
 msgstr "Timer nicht installiert -- ./install.sh ausführen"
 
-#: unsplash-wallpaper.py:777
+#: daily-wallpaper.py:781
 msgid "Timer:"
 msgstr "Timer:"
 
-#: unsplash-wallpaper-gui.py:74
+#: daily-wallpaper-gui.py:85
 msgid "Tuesday"
 msgstr "Dienstag"
 
-#: unsplash-wallpaper-gui.py:592 unsplash-wallpaper.py:287
+#: daily-wallpaper-gui.py:627 daily-wallpaper.py:291
 msgid "Unknown"
 msgstr "Unbekannt"
 
-#: unsplash-wallpaper-gui.py:462
+#: daily-wallpaper-gui.py:492
 msgid "Unsplash"
 msgstr "Unsplash"
 
-#: unsplash-wallpaper.py:731
+#: daily-wallpaper.py:735
 msgid "Unsplash key"
 msgstr "Unsplash-Key"
 
-#: unsplash-wallpaper.py:693
+#: daily-wallpaper.py:697
 msgid "Unsplash rejected the access key (HTTP %d) -- falling back to Lorem Picsum"
 msgstr "Unsplash lehnt den Access Key ab (HTTP %d) -- weiter mit Lorem Picsum"
 
-#: unsplash-wallpaper-gui.py:487
+#: daily-wallpaper-gui.py:517
 msgid "Wallpaper"
 msgstr "Hintergrundbild"
 
-#: unsplash-wallpaper.py:500
+#: daily-wallpaper.py:504
 msgid "Wallpaper set: %s"
 msgstr "Hintergrundbild gesetzt: %s"
 
-#: unsplash-wallpaper.py:653
+#: daily-wallpaper.py:657
 msgid "Watch mode started, checking every %d minutes"
 msgstr "Wach-Modus gestartet, Prüfung alle %d Minuten"
 
-#: unsplash-wallpaper-gui.py:74
+#: daily-wallpaper-gui.py:85
 msgid "Wednesday"
 msgstr "Mittwoch"
 
-#: unsplash-wallpaper-gui.py:463
+#: daily-wallpaper-gui.py:493
 msgid "Without an access key, Lorem Picsum is used as a fallback source."
 msgstr "Ohne Access Key wird Lorem Picsum als Ersatzquelle benutzt."
 
-#: unsplash-wallpaper-gui.py:325
+#: daily-wallpaper-gui.py:355
 msgid "Zoom (fills the screen)"
 msgstr "Zoom (füllt aus)"
 
-#: unsplash-wallpaper-gui.py:121
+#: daily-wallpaper-gui.py:132
 msgid "just now"
 msgstr "gerade eben"
 
-#: unsplash-wallpaper-gui.py:103
+#: daily-wallpaper-gui.py:114
 msgid "last {weekday}"
 msgstr "am vergangenen {weekday}"
 
-#: unsplash-wallpaper-gui.py:222 unsplash-wallpaper-gui.py:282
+#: daily-wallpaper-gui.py:252 daily-wallpaper-gui.py:312
 msgid "last {when}"
 msgstr "zuletzt {when}"
 
-#: unsplash-wallpaper.py:757
+#: daily-wallpaper.py:761
 msgid "no"
 msgstr "nein"
 
-#: unsplash-wallpaper.py:740
+#: daily-wallpaper.py:744
 msgid "not readable ({error})"
 msgstr "nicht lesbar ({error})"
 
-#: unsplash-wallpaper.py:733
+#: daily-wallpaper.py:737
 msgid "not set -> Lorem Picsum"
 msgstr "nicht gesetzt -> Lorem Picsum"
 
-#: unsplash-wallpaper.py:753
+#: daily-wallpaper.py:757
 msgid "off"
 msgstr "aus"
 
-#: unsplash-wallpaper.py:753
+#: daily-wallpaper.py:757
 msgid "on"
 msgstr "an"
 
-#: unsplash-wallpaper-gui.py:105
+#: daily-wallpaper-gui.py:116
 msgid "on {day} {month}"
 msgstr "am {day}. {month}"
 
-#: unsplash-wallpaper-gui.py:106
+#: daily-wallpaper-gui.py:117
 msgid "on {day} {month} {year}"
 msgstr "am {day}. {month} {year}"
 
-#: unsplash-wallpaper-gui.py:101
+#: daily-wallpaper-gui.py:112
 msgid "on {weekday}"
 msgstr "am {weekday}"
 
-#: unsplash-wallpaper.py:732
+#: daily-wallpaper.py:736
 msgid "set ({prefix}...)"
 msgstr "gesetzt ({prefix}...)"
 
-#: unsplash-wallpaper-gui.py:99
+#: daily-wallpaper-gui.py:110 daily-wallpaper-gui.py:159
 msgid "the day before yesterday"
 msgstr "vorgestern"
 
-#: unsplash-wallpaper-gui.py:93
+#: daily-wallpaper-gui.py:104 daily-wallpaper-gui.py:155
 msgid "today"
 msgstr "heute"
 
-#: unsplash-wallpaper-gui.py:97
+#: daily-wallpaper-gui.py:108
 msgid "tomorrow"
 msgstr "morgen"
 
-#: unsplash-wallpaper.py:757
+#: daily-wallpaper.py:761
 msgid "yes"
 msgstr "ja"
 
-#: unsplash-wallpaper-gui.py:95
+#: daily-wallpaper-gui.py:106 daily-wallpaper-gui.py:157
 msgid "yesterday"
 msgstr "gestern"
 
-#: unsplash-wallpaper-gui.py:130
+#: daily-wallpaper-gui.py:141
 msgid "{count} hour ago"
 msgid_plural "{count} hours ago"
 msgstr[0] "vor {count} Stunde"
 msgstr[1] "vor {count} Stunden"
 
-#: unsplash-wallpaper-gui.py:125
+#: daily-wallpaper-gui.py:136
 msgid "{count} minute ago"
 msgid_plural "{count} minutes ago"
 msgstr[0] "vor {count} Minute"
 msgstr[1] "vor {count} Minuten"
 
-#: unsplash-wallpaper-gui.py:112
+#: daily-wallpaper-gui.py:123
 msgid "{day} at {time}"
 msgstr "{day} um {time}"
 
-#: unsplash-wallpaper-gui.py:140
-msgid "{day}, {time}"
-msgstr "{day}, {time}"
-
-#: unsplash-wallpaper.py:755
-msgid "{state}, daily at {time}"
-msgstr "{state}, täglich um {time}"
-
-#: unsplash-wallpaper.py:745
-msgid "{when} -- photo by {author}"
-msgstr "{when} -- Foto von {author}"
-
+#: daily-wallpaper-gui.py:163
 msgid "{day} {month}"
 msgstr "{day}. {month}"
 
+#: daily-wallpaper-gui.py:165
 msgid "{day} {month} {year}"
 msgstr "{day}. {month} {year}"
 
-msgid "Handled by a background service that starts with your session and catches up a missed day."
-msgstr "Wird von einem Hintergrunddienst erledigt, der mit der Sitzung startet und einen verpassten Tag nachholt."
+#: daily-wallpaper-gui.py:170
+msgid "{day}, {time}"
+msgstr "{day}, {time}"
+
+#: daily-wallpaper.py:759
+msgid "{state}, daily at {time}"
+msgstr "{state}, täglich um {time}"
+
+#: daily-wallpaper.py:749
+msgid "{when} -- photo by {author}"
+msgstr "{when} -- Foto von {author}"

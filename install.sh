@@ -1,26 +1,45 @@
 #!/usr/bin/env bash
-# Installiert unsplash-wallpaper als täglichen systemd-User-Timer.
+# Installiert daily-wallpaper als täglichen systemd-User-Timer.
 set -euo pipefail
 
-APP="unsplash-wallpaper"
+APP="daily-wallpaper"
+# Vor der Umbenennung hiess das Projekt unsplash-wallpaper. Der Name lebt in
+# den Ordnern für Konfiguration und Status weiter, damit bestehende
+# Installationen Access Key und Verlauf behalten.
+DATA_NAME="unsplash-wallpaper"
+OLD_APP="unsplash-wallpaper"
 SRC_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 BIN_DIR="$HOME/.local/bin"
 UNIT_DIR="$HOME/.config/systemd/user"
 
 # Uhrzeit des täglichen Laufs, überschreibbar:  RUN_AT=07:30 ./install.sh
-# Ohne RUN_AT bleibt eine bereits eingestellte Zeit erhalten (z. B. aus der GUI).
-if [ -z "${RUN_AT:-}" ] && [ -f "$HOME/.config/systemd/user/$APP.timer" ]; then
-  RUN_AT="$(sed -n 's/^OnCalendar=.*[[:space:]]\([0-9][0-9]:[0-9][0-9]\).*$/\1/p' \
-            "$HOME/.config/systemd/user/$APP.timer" | head -1)"
+# Ohne RUN_AT bleibt eine bereits eingestellte Zeit erhalten (z. B. aus der GUI
+# oder aus der Installation unter dem alten Namen).
+if [ -z "${RUN_AT:-}" ]; then
+  for unit in "$UNIT_DIR/$APP.timer" "$UNIT_DIR/$OLD_APP.timer"; do
+    [ -f "$unit" ] || continue
+    RUN_AT="$(sed -n 's/^OnCalendar=.*[[:space:]]\([0-9][0-9]:[0-9][0-9]\).*$/\1/p' \
+              "$unit" | head -1)"
+    [ -n "$RUN_AT" ] && break
+  done
 fi
 RUN_AT="${RUN_AT:-09:00}"
 
 command -v gsettings >/dev/null || { echo "Fehler: gsettings nicht gefunden (GNOME nötig)."; exit 1; }
 command -v python3   >/dev/null || { echo "Fehler: python3 nicht gefunden."; exit 1; }
 
+# Reste der Installation unter dem alten Namen entfernen -- sonst liefe der
+# alte Timer weiter und das Hintergrundbild wechselte zweimal am Tag.
+if [ -f "$UNIT_DIR/$OLD_APP.timer" ] || [ -f "$BIN_DIR/$OLD_APP" ]; then
+  echo "==> Alte Installation ($OLD_APP) entfernen"
+  systemctl --user disable --now "$OLD_APP.timer" 2>/dev/null || true
+  rm -f "$UNIT_DIR/$OLD_APP.timer" "$UNIT_DIR/$OLD_APP.service"
+  rm -f "$BIN_DIR/$OLD_APP" "$BIN_DIR/$OLD_APP-gui"
+fi
+
 echo "==> Skripte nach $BIN_DIR installieren"
 mkdir -p "$BIN_DIR"
-install -m 755 "$SRC_DIR/unsplash-wallpaper.py" "$BIN_DIR/$APP"
+install -m 755 "$SRC_DIR/daily-wallpaper.py" "$BIN_DIR/$APP"
 
 # Grafische Oberfläche -- optional, braucht PyGObject mit GTK4 und libadwaita
 GUI_OK=no
@@ -29,7 +48,7 @@ import gi
 gi.require_version('Gtk','4.0'); gi.require_version('Adw','1')
 from gi.repository import Gtk, Adw
 " 2>/dev/null; then
-  install -m 755 "$SRC_DIR/unsplash-wallpaper-gui.py" "$BIN_DIR/$APP-gui"
+  install -m 755 "$SRC_DIR/daily-wallpaper-gui.py" "$BIN_DIR/$APP-gui"
   GUI_OK=yes
 
   echo "==> Symbole installieren"
@@ -47,7 +66,7 @@ from gi.repository import Gtk, Adw
   cat > "$DESKTOP_DIR/de.zurek.UnsplashWallpaper.desktop" <<DESKTOP
 [Desktop Entry]
 Type=Application
-Name=Unsplash Wallpaper
+Name=Daily Wallpaper
 Comment=Täglich ein neues Hintergrundbild von Unsplash
 Exec=$BIN_DIR/$APP-gui
 Icon=de.zurek.UnsplashWallpaper
@@ -112,7 +131,7 @@ case ":$PATH:" in
      echo "         export PATH=\"\$HOME/.local/bin:\$PATH\"" ;;
 esac
 
-CONFIG="$HOME/.config/$APP/config.ini"
+CONFIG="$HOME/.config/$DATA_NAME/config.ini"
 "$BIN_DIR/$APP" --config >/dev/null 2>&1 || true
 
 cat <<MSG
@@ -133,6 +152,6 @@ Status ansehen:        $APP --status
 MSG
 
 if [ "$GUI_OK" = yes ]; then
-  echo "Grafische Oberfläche:  $APP-gui   (auch im App-Menü als \"Unsplash Wallpaper\")"
+  echo "Grafische Oberfläche:  $APP-gui   (auch im App-Menü als \"Daily Wallpaper\")"
   echo
 fi

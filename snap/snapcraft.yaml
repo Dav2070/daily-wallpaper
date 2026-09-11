@@ -24,10 +24,10 @@ description: |
 
 title: Daily Wallpaper
 license: MIT
-website: https://github.com/Dav2070/wallpaper-ubuntu-app
-source-code: https://github.com/Dav2070/wallpaper-ubuntu-app
-issues: https://github.com/Dav2070/wallpaper-ubuntu-app/issues
-contact: https://github.com/Dav2070/wallpaper-ubuntu-app/issues
+website: https://github.com/Dav2070/daily-wallpaper
+source-code: https://github.com/Dav2070/daily-wallpaper
+issues: https://github.com/Dav2070/daily-wallpaper/issues
+contact: https://github.com/Dav2070/daily-wallpaper/issues
 grade: stable
 confinement: strict
 compression: lzo
@@ -49,8 +49,8 @@ parts:
     plugin: dump
     source: .
     organize:
-      unsplash-wallpaper.py: bin/daily-wallpaper
-      unsplash-wallpaper-gui.py: bin/daily-wallpaper-gui
+      daily-wallpaper.py: bin/daily-wallpaper
+      daily-wallpaper-gui.py: bin/daily-wallpaper-gui
       icons/de.zurek.UnsplashWallpaper.svg: usr/share/icons/hicolor/scalable/apps/daily-wallpaper.svg
       icons/de.zurek.UnsplashWallpaper-symbolic.svg: usr/share/icons/hicolor/symbolic/apps/daily-wallpaper-symbolic.svg
     # Übersetzungen kompilieren. tools/i18n.py kommt ohne gettext-Paket aus,

@@ -1,4 +1,4 @@
-# unsplash-wallpaper
+# Daily Wallpaper
 
 Lädt einmal täglich ein zufälliges Foto von Unsplash herunter und setzt es als
 Hintergrundbild unter Ubuntu/GNOME. Reines Python 3 aus der Standardbibliothek,
@@ -16,7 +16,7 @@ Andere Uhrzeit für den täglichen Lauf:
 RUN_AT=07:30 ./install.sh
 ```
 
-Der Installer legt `~/.local/bin/unsplash-wallpaper` an und aktiviert einen
+Der Installer legt `~/.local/bin/daily-wallpaper` an und aktiviert einen
 systemd-User-Timer. `Persistent=true` sorgt dafür, dass der Lauf nachgeholt
 wird, wenn der Rechner zur eingestellten Zeit ausgeschaltet war.
 
@@ -41,10 +41,10 @@ access_key = dein_access_key
 ## Grafische Oberfläche
 
 ```bash
-unsplash-wallpaper-gui
+daily-wallpaper-gui
 ```
 
-Liegt nach der Installation auch im App-Menü als **Unsplash Wallpaper**.
+Liegt nach der Installation auch im App-Menü als **Daily Wallpaper**.
 GTK4/libadwaita, drei Seiten:
 
 - **Aktuell** — Vorschau des laufenden Hintergrundbilds mit Fotograf, Suchfeld
@@ -100,11 +100,11 @@ Standardformat und lassen sich mit Poedit bearbeiten.
 
 ```bash
 # nach Änderungen an übersetzbaren Texten
-python3 tools/i18n.py extract unsplash-wallpaper.py unsplash-wallpaper-gui.py
+python3 tools/i18n.py extract daily-wallpaper.py daily-wallpaper-gui.py
 
 # zum Ausprobieren aus dem Projektordner heraus
 python3 tools/i18n.py compile --output locale
-LANGUAGE=de python3 unsplash-wallpaper-gui.py
+LANGUAGE=de python3 daily-wallpaper-gui.py
 ```
 
 `install.sh` und der Snap-Bau kompilieren die Übersetzungen selbst; `locale/`
@@ -143,15 +143,18 @@ muss die App nach der Installation einmal geöffnet werden.
 ## Benutzung
 
 ```bash
-unsplash-wallpaper                      # Jetzt ein neues Wallpaper setzen
-unsplash-wallpaper --query "snow alps"  # Einmalig mit anderem Suchbegriff
-unsplash-wallpaper --status             # Aktuelles Bild, Fotograf, Timer
-unsplash-wallpaper -v                   # Mit Debug-Ausgaben
+daily-wallpaper                      # Jetzt ein neues Wallpaper setzen
+daily-wallpaper --query "snow alps"  # Einmalig mit anderem Suchbegriff
+daily-wallpaper --status             # Aktuelles Bild, Fotograf, Timer
+daily-wallpaper -v                   # Mit Debug-Ausgaben
 ```
 
 ## Konfiguration
 
 `~/.config/unsplash-wallpaper/config.ini`
+
+Der Ordnername stammt noch vom alten Projektnamen. Er bleibt so, damit
+bestehende Installationen Access Key, Verlauf und Zeitplan behalten.
 
 | Schlüssel | Bedeutung |
 |---|---|
@@ -172,11 +175,11 @@ unsplash-wallpaper -v                   # Mit Debug-Ausgaben
 ## Timer verwalten
 
 ```bash
-systemctl --user list-timers unsplash-wallpaper.timer   # Nächster Lauf
-systemctl --user start unsplash-wallpaper.service       # Jetzt ausführen
-systemctl --user stop unsplash-wallpaper.timer          # Pausieren
-systemctl --user start unsplash-wallpaper.timer         # Fortsetzen
-journalctl --user -u unsplash-wallpaper.service -n 50   # Protokoll
+systemctl --user list-timers daily-wallpaper.timer   # Nächster Lauf
+systemctl --user start daily-wallpaper.service       # Jetzt ausführen
+systemctl --user stop daily-wallpaper.timer          # Pausieren
+systemctl --user start daily-wallpaper.timer         # Fortsetzen
+journalctl --user -u daily-wallpaper.service -n 50   # Protokoll
 ```
 
 Uhrzeit nachträglich ändern: in der GUI unter *Einstellungen → Zeitplan*, oder
@@ -204,10 +207,10 @@ eingestellte Uhrzeit bei.
 ## Dateien
 
 ```
-~/.local/bin/unsplash-wallpaper                    Programm (Kommandozeile)
-~/.local/bin/unsplash-wallpaper-gui                Grafische Oberfläche
+~/.local/bin/daily-wallpaper                       Programm (Kommandozeile)
+~/.local/bin/daily-wallpaper-gui                   Grafische Oberfläche
 ~/.config/unsplash-wallpaper/config.ini            Konfiguration
-~/.config/systemd/user/unsplash-wallpaper.{service,timer}
+~/.config/systemd/user/daily-wallpaper.{service,timer}
 ~/.local/state/unsplash-wallpaper/wallpaper.log    Protokoll (rotiert)
 ~/.local/state/unsplash-wallpaper/current.json     Metadaten des aktuellen Bilds
 ~/.local/state/unsplash-wallpaper/history.json     Fotograf je heruntergeladenem Bild

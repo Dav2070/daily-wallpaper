@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
-"""GTK4/libadwaita-Oberfläche für unsplash-wallpaper.
+"""GTK4/libadwaita-Oberfläche für daily-wallpaper.
 
-Die eigentliche Logik liegt in unsplash-wallpaper.py und wird hier nur
+Die eigentliche Logik liegt in daily-wallpaper.py und wird hier nur
 angesteuert -- es gibt keine zweite Implementierung.
 """
 
@@ -28,7 +28,18 @@ gi.require_version("Pango", "1.0")
 from gi.repository import Adw, GdkPixbuf, Gio, GLib, Gtk, Pango  # noqa: E402
 
 APP_ID = "de.zurek.UnsplashWallpaper"
-UNIT = "unsplash-wallpaper"
+UNIT = "daily-wallpaper"
+
+# Muss zur »version« in snap/snapcraft.yaml passen.
+VERSION = "1.1"
+
+DEVELOPER = "dav Apps"
+WEBSITE_URL = "https://dav-apps.tech"
+REPO_URL = "https://github.com/Dav2070/daily-wallpaper"
+PRIVACY_URL = "https://dav-apps.tech/privacy"
+DONATE_URL = "https://buy.stripe.com/eVq9AUaRb8defnldt5c7u02"
+UNSPLASH_URL = "https://unsplash.com"
+PICSUM_URL = "https://picsum.photos"
 
 
 # --------------------------------------------------------------------------- #
@@ -38,9 +49,9 @@ UNIT = "unsplash-wallpaper"
 def load_core():
     here = Path(__file__).resolve()
     candidates = [
-        here.with_name("unsplash-wallpaper.py"),      # Projektordner
+        here.with_name("daily-wallpaper.py"),         # Projektordner
         here.with_name("daily-wallpaper"),            # Snap: bin/daily-wallpaper
-        Path.home() / ".local/bin/unsplash-wallpaper",
+        Path.home() / ".local/bin/daily-wallpaper",
     ]
     if snap := os.environ.get("SNAP"):
         candidates.insert(0, Path(snap) / "bin/daily-wallpaper")
@@ -54,7 +65,7 @@ def load_core():
             sys.modules["uw_core"] = module
             loader.exec_module(module)
             return module
-    raise SystemExit("unsplash-wallpaper.py not found")
+    raise SystemExit("daily-wallpaper.py not found")
 
 
 core = load_core()
@@ -743,15 +754,56 @@ class Window(Adw.ApplicationWindow):
         else:
             self.toast(_("No log available yet"))
 
+    def _debug_info(self) -> str:
+        """Systemangaben für Fehlerberichte -- bewusst unübersetzt, damit sie
+        in einem Issue ohne Rückfragen lesbar sind."""
+        key = core.unquote(self.cfg["unsplash"]["access_key"])
+        lines = [
+            f"Daily Wallpaper {VERSION}",
+            f"Package: {'snap' if os.environ.get('SNAP') else 'system'}",
+            f"Python: {sys.version.split()[0]}",
+            f"GTK: {Gtk.get_major_version()}.{Gtk.get_minor_version()}."
+            f"{Gtk.get_micro_version()}",
+            f"libadwaita: {Adw.get_major_version()}.{Adw.get_minor_version()}."
+            f"{Adw.get_micro_version()}",
+            f"Desktop: {os.environ.get('XDG_CURRENT_DESKTOP', 'unknown')}"
+            f" ({os.environ.get('XDG_SESSION_TYPE', 'unknown')})",
+            f"Language: {os.environ.get('LANG', 'unset')}",
+            f"Image source: {'Unsplash' if key else 'Lorem Picsum (no access key)'}",
+            f"Config: {core.CONFIG_FILE}",
+            f"Images: {core.expand_path(self.cfg['wallpaper']['directory'])}",
+            f"Log: {core.LOG_FILE}",
+        ]
+        return "\n".join(lines)
+
     def on_about(self, *_args) -> None:
         about = Adw.AboutDialog(
             application_name=_("Daily Wallpaper"),
             application_icon="daily-wallpaper" if os.environ.get("SNAP") else APP_ID,
-            developer_name="unsplash-wallpaper",
-            version="1.1",
+            developer_name=DEVELOPER,
+            version=VERSION,
             comments=_("Sets a photo from Unsplash as the wallpaper every day."),
-            website="https://unsplash.com",
+            website=WEBSITE_URL,
+            issue_url=f"{REPO_URL}/issues",
+            copyright=f"© {date.today().year} dav",
             license_type=Gtk.License.MIT_X11)
+
+        about.add_link(_("Source code"), REPO_URL)
+        about.add_link(_("Privacy policy"), PRIVACY_URL)
+        about.add_link(_("Donate"), DONATE_URL)
+
+        # Die Fotos kommen nicht von dieser Anwendung -- die Quellen gehören
+        # sichtbar in den Dialog, nicht nur in die Beschreibung.
+        about.add_acknowledgement_section(
+            _("Photos"), [f"Unsplash {UNSPLASH_URL}", f"Lorem Picsum {PICSUM_URL}"])
+        about.add_legal_section(
+            _("Photos"), None, Gtk.License.CUSTOM,
+            _("Photos are provided by Unsplash and Lorem Picsum and remain "
+              "subject to their own licences. This application is not "
+              "affiliated with Unsplash Inc."))
+
+        about.set_debug_info(self._debug_info())
+        about.set_debug_info_filename("daily-wallpaper-debug.txt")
         about.present(self)
 
 

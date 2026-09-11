@@ -4,9 +4,9 @@
 Nur Python-Standardbibliothek, keine externen Abhängigkeiten.
 
 Aufrufe:
-    unsplash-wallpaper.py            Neues Wallpaper holen und setzen
-    unsplash-wallpaper.py --status   Zeigt aktuelles Wallpaper + Konfiguration
-    unsplash-wallpaper.py --query "misty forest"   Suchbegriff für diesen Lauf
+    daily-wallpaper.py            Neues Wallpaper holen und setzen
+    daily-wallpaper.py --status   Zeigt aktuelles Wallpaper + Konfiguration
+    daily-wallpaper.py --query "misty forest"   Suchbegriff für diesen Lauf
 """
 
 from __future__ import annotations
@@ -31,8 +31,12 @@ from dataclasses import dataclass, asdict
 from datetime import date, datetime
 from pathlib import Path
 
-APP = "unsplash-wallpaper"
+APP = "daily-wallpaper"
 USER_AGENT = f"{APP}/1.0 (+https://unsplash.com/developers)"
+
+# Konfiguration und Status liegen weiter unter dem alten Projektnamen, damit
+# bestehende Installationen Access Key, Verlauf und Zeitplan behalten.
+DATA_NAME = "unsplash-wallpaper"
 
 GETTEXT_DOMAIN = "daily-wallpaper"
 
@@ -61,9 +65,9 @@ _ = _translation.gettext
 ngettext = _translation.ngettext
 
 
-CONFIG_DIR = Path(os.environ.get("XDG_CONFIG_HOME", Path.home() / ".config")) / APP
+CONFIG_DIR = Path(os.environ.get("XDG_CONFIG_HOME", Path.home() / ".config")) / DATA_NAME
 CONFIG_FILE = CONFIG_DIR / "config.ini"
-STATE_DIR = Path(os.environ.get("XDG_STATE_HOME", Path.home() / ".local/state")) / APP
+STATE_DIR = Path(os.environ.get("XDG_STATE_HOME", Path.home() / ".local/state")) / DATA_NAME
 LOG_FILE = STATE_DIR / "wallpaper.log"
 CURRENT_JSON = STATE_DIR / "current.json"
 HISTORY_JSON = STATE_DIR / "history.json"
