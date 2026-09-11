@@ -31,7 +31,7 @@ APP_ID = "de.zurek.UnsplashWallpaper"
 UNIT = "daily-wallpaper"
 
 # Muss zur »version« in snap/snapcraft.yaml passen.
-VERSION = "1.1"
+VERSION = "1.1.1"
 
 DEVELOPER = "dav Apps"
 WEBSITE_URL = "https://dav-apps.tech"

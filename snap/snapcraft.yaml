@@ -1,6 +1,6 @@
 name: daily-wallpaper
 base: core24
-version: '1.1'
+version: '1.1.1'
 summary: A new Unsplash wallpaper every day
 description: |
   Daily Wallpaper fetches a photo from Unsplash once a day and sets it as your
